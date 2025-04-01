@@ -148,10 +148,10 @@ def pencere():
         win_env.destroy()
     except:
         pass
-    win_isim = tk.Label(win, text= oyuncu.isim, bg= "slategrey")
-    win_can = tk.Label(win, text= f"Can: {oyuncu.can}", bg= "slategrey")
-    win_atak = tk.Label(win, text= f"Atak Gücü: {oyuncu.atak}", bg= "slategrey")
-    win_sans = tk.Label(win, text= f"Şans: {oyuncu.sans}", bg= "slategrey")
+    win_isim = tk.Label(win, text= oyuncu.isim, bg= "slategrey", fg="blue")
+    win_can = tk.Label(win, text= f"Can: {oyuncu.can}", bg= "slategrey", fg= "#ddd310")
+    win_atak = tk.Label(win, text= f"Atak Gücü: {oyuncu.atak}", bg= "slategrey", fg= "#ddd310")
+    win_sans = tk.Label(win, text= f"Şans: {oyuncu.sans}", bg= "slategrey", fg= "#ddd310")
     win_envanter = tk.Label(canvas, text= "Envanter:", bg= "#add8e6")
 
     win_envanterdekiler = ""
@@ -184,8 +184,8 @@ def yazc(stdscr, metin:str, y:int= None, x:int= None, stil= curses.COLOR_WHITE) 
         Yer belirtilmez ise terminalin ortasına yazdırılır.
         "@" karakterinin olduğu yere oyuncunun ismi yazılır.
     """
-    if y==None and x ==None:
-        y, x = maxy//2, maxx//2 - len(metin)//2
+    y = maxy//2 if y==None else y
+    x = maxx//2 - len(metin)//2 if x==None else x 
     if m:= metin.count("@"):
         x -= m*(len(oyuncu()) -1)
     for i in metin:
@@ -200,21 +200,22 @@ def yazc(stdscr, metin:str, y:int= None, x:int= None, stil= curses.COLOR_WHITE) 
         sleep(.05)
 
 
-def yazci(stdscr, sure=1, *args, stil= curses.COLOR_WHITE, clear=True) -> None:
+def yazci(stdscr, sure=1, *args, y=None, x=None, stil= curses.COLOR_WHITE, clear=True) -> None:
     """ Verilen parametreler hepsinin sonunda süre beklenecek şekilde yazdırılır.
         Varsayılan olarak terminalin ortasına yazdırılır.
         İlk parametre curses'in objesi için, ikinci parametre (sure) aralarda ve sonda beklenecek süre (saniye)
         Sonraki isimsiz parametreler yazılacak metinler.
         stil parametresi curses color pairleri için.
         clear True ise kendisinden önceki yazılar silinir.
+        yazci(stdscr, süre, "metinler", stil= white, clear=True)
     """
     if clear: stdscr.clear()
     uzunluklar = list()
     for metin in args:
         uzunluklar.append(len(metin))
     orta = sum(uzunluklar)
-    y = maxy//2
-    x = maxx//2 - orta//2
+    y = maxy//2 if not y else y
+    x = maxx//2 - orta//2 if not x else x
     for i, uzunluk in enumerate(uzunluklar):
         yazc(stdscr, args[i], y, x, stil=stil)
         x += uzunluk
@@ -279,7 +280,7 @@ def Oyna(stdscr):
 
 
 
-    ### Oyun başlar... ###
+    ### Oyun başlar ###
 
     yazci(stdscr, 1, "Hey", ", sen.", " Sonunda uyandın.")
 
@@ -288,7 +289,7 @@ def Oyna(stdscr):
         curses.echo()   # Kullanıcının cevabının ekranda görünmesi
         soru = "Senin adın nedir? : "
         yazc(stdscr, soru, y= maxy//2, x=0)
-        ad = stdscr.getstr(maxy//2, len(soru), 22).decode('utf-8')  # maksimum 22 karakterlik isim alınır
+        ad = stdscr.getstr(maxy//2, len(soru), 22).decode('utf-8').strip()  # maksimum 22 karakterlik isim alınır
         karaliste = ["/", "\\", ",", "@", ":", "*", ">", "<", "?", "\"", "|"]
 
         if not ad or any(i in ad for i in karaliste) or ad.isnumeric():
@@ -325,12 +326,16 @@ def Oyna(stdscr):
     ### 1. Bölüm ###
     
     if oyuncu.bolum == 1:
+        yazci(stdscr, 1, "Herkes senin uyanmanı bekliyordu @.")
         stdscr.clear()
-        yazc(stdscr, "Herkes senin uyanmanı bekliyordu @.")
+
+        oyuncu.save()
 
 
     elif oyuncu.bolum == 2:
         pass
+
+        oyuncu.save()
 
     else:
         yazci(stdscr, 2, "Sanırım", " ... ", " kayboldun.")
