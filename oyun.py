@@ -5,6 +5,8 @@ from time import sleep
 import curses
 import tkinter as tk
 import threading
+import json
+import os
 
 
 class Oyuncu:
@@ -22,6 +24,15 @@ class Oyuncu:
 
         self.silah = Sopa()
         self.envanter["Silah"] = self.silah
+    
+    def data(self):
+        return {"isim": self.isim,
+                "envanter": self.envanter,
+                "can": self.can,
+                "atak": self.atak,
+                "sans": self.sans,
+                "silah": self.silah.__str__()
+                }
     
     def envantere_ekle(self, esya):
         if issubclass(type(esya), Silah):
@@ -90,7 +101,14 @@ class Sopa(Silah):
 
 
 
-
+def save():
+    with open(f"{oyuncu()}.json", 'w') as fff:
+        json.dump(oyuncu.data, fff, indent= 4) # indent 4 json'u okunabilir yapar
+def save_sil():
+    try:
+        os.remove(f"{oyuncu()}.json")
+    except:
+        pass
 
 
 
@@ -228,6 +246,7 @@ def Oyna(stdscr):
 
 
     ### Oyun başlar... ###
+
     yazci(stdscr, 1, "Hey", ", sen.", " Sonunda uyandın.")
 
     while True:
