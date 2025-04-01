@@ -1,7 +1,5 @@
 Şu modüller kullanılmıştır. Kurulu değil ise kurunuz:
 
-colorama==0.4.6
+windows-curses==2.4.1
 
-
-
-Oyunu kapatmak için açılan Menü penceresini kapatabilirsiniz.
+Oyunu kapatmak için, açılan Menü penceresini kapatabilirsiniz.
