@@ -11,12 +11,13 @@ import os
 
 class Oyuncu:
     """ Oyuncunun sınıfı.
-        100 can, 10 atak gücü (sopa), %15 şans ile başlanır.
+        100 can, 10 atak gücü (Sopa), %15 şans ile başlanır.
         Envanter dict türündedir. Sopa ile başlanır
     """
 
     def __init__(self, isim):
         self.isim = isim
+        self.bolum = 1
         self.envanter = dict()
         self.can = 100
         self.atak = 10
@@ -26,13 +27,39 @@ class Oyuncu:
         self.envanter["Silah"] = self.silah
     
     def data(self):
+        depo = self.envanter.copy()
         return {"isim": self.isim,
-                "envanter": self.envanter,
+                "bolum": self.bolum,
+                "silah": depo.pop("Silah", None).__str__(),
+                "envanter": depo,
                 "can": self.can,
                 "atak": self.atak,
                 "sans": self.sans,
-                "silah": self.silah.__str__()
                 }
+    
+    def save(self):
+        """ Oyuncunun isminde bir json dosyası oyuncunun bilgileri ile dizine yazdırılır
+            Her bölüm sonunda çağırılmalı.
+        """
+        with open(f"{self.isim}.json", 'w') as fff:
+            json.dump(oyuncu.data(), fff, indent= 4)
+
+    def save_sil(self):
+        try: os.remove(f"{self.isim}.json")
+        except: pass
+
+    def save_yukle(self, data):
+        self.bolum = data["bolum"]
+        self.envanter = data["envanter"]
+        self.can = data["can"]
+        self.atak = data["atak"]
+        self.sans = data["sans"]
+        if data["Silah"] == "Sopa":
+            self.envantere_ekle(Sopa())
+
+
+
+
     
     def envantere_ekle(self, esya):
         if issubclass(type(esya), Silah):
@@ -101,18 +128,6 @@ class Sopa(Silah):
 
 
 
-def save():
-    with open(f"{oyuncu()}.json", 'w') as fff:
-        json.dump(oyuncu.data, fff, indent= 4) # indent 4 json'u okunabilir yapar
-def save_sil():
-    try:
-        os.remove(f"{oyuncu()}.json")
-    except:
-        pass
-
-
-
-
 
 
 
@@ -165,6 +180,10 @@ def pencere():
 
 
 def yazc(stdscr, metin:str, y:int= None, x:int= None, stil= curses.COLOR_WHITE) -> None:
+    """ Verilen metinin her harfi çok bir kısa süre beklenerek yazılır.
+        Yer belirtilmez ise terminalin ortasına yazdırılır.
+        "@" karakterinin olduğu yere oyuncunun ismi yazılır.
+    """
     if y==None and x ==None:
         y, x = maxy//2, maxx//2 - len(metin)//2
     if m:= metin.count("@"):
@@ -181,8 +200,15 @@ def yazc(stdscr, metin:str, y:int= None, x:int= None, stil= curses.COLOR_WHITE) 
         sleep(.05)
 
 
-def yazci(stdscr, sure=1, *args, stil= curses.COLOR_WHITE) -> None:
-    stdscr.clear()
+def yazci(stdscr, sure=1, *args, stil= curses.COLOR_WHITE, clear=True) -> None:
+    """ Verilen parametreler hepsinin sonunda süre beklenecek şekilde yazdırılır.
+        Varsayılan olarak terminalin ortasına yazdırılır.
+        İlk parametre curses'in objesi için, ikinci parametre (sure) aralarda ve sonda beklenecek süre (saniye)
+        Sonraki isimsiz parametreler yazılacak metinler.
+        stil parametresi curses color pairleri için.
+        clear True ise kendisinden önceki yazılar silinir.
+    """
+    if clear: stdscr.clear()
     uzunluklar = list()
     for metin in args:
         uzunluklar.append(len(metin))
@@ -194,7 +220,7 @@ def yazci(stdscr, sure=1, *args, stil= curses.COLOR_WHITE) -> None:
         x += uzunluk
         sleep(sure)
     stdscr.addstr(chr(187))
-    stdscr.getch()
+    return stdscr.getch()
 
 
 
@@ -241,8 +267,16 @@ def Oyna(stdscr):
     curses.start_color()
     curses.init_pair(1, curses.COLOR_CYAN, curses.COLOR_BLACK)  # Oyuncu ismi rengi
     curses.init_pair(2, curses.COLOR_RED, curses.COLOR_BLACK)   # Kırmızı yazı
+    curses.init_pair(3, curses.COLOR_GREEN, curses.COLOR_BLACK) # Yeşil yazı
+
+
+
+
 
     
+
+
+
 
 
     ### Oyun başlar... ###
@@ -255,7 +289,7 @@ def Oyna(stdscr):
         soru = "Senin adın nedir? : "
         yazc(stdscr, soru, y= maxy//2, x=0)
         ad = stdscr.getstr(maxy//2, len(soru), 22).decode('utf-8')  # maksimum 22 karakterlik isim alınır
-        karaliste = ["/", "\\", ",", "@"]
+        karaliste = ["/", "\\", ",", "@", ":", "*", ">", "<", "?", "\"", "|"]
 
         if not ad or any(i in ad for i in karaliste) or ad.isnumeric():
             yazci(stdscr, 0.5, "Benimle dalga mı geçiyorsun!", " Doğru düzgün söyle.", stil= curses.color_pair(2))
@@ -263,23 +297,47 @@ def Oyna(stdscr):
         break
 
 
+
     oyuncu = Oyuncu(ad) # Oyuncu oluşturuldu
     pencere()   # Oyuncu bilgilerinin menüde gösterilmesi
     
 
-    """
-    curses.echo() # kullanıcının yazdığı gozuksun
-    text = stdscr.getstr(1, 0, 20).decode('utf-8') # 1.satırda 20 karakterlik bir giriş
-    stdscr.clear()
-    stdscr.addstr(0, 0, f"girilen metin: {text}")
-    stdscr.refresh()
-    """
+    if f"{ad}.json" in os.listdir():
+        curses.noecho()
+        cevap = yazci(stdscr, 0.1, "Save dosyası bulundu. Yüklemek ister misin(1) yoksa sıfırdan mı devam(2) edersin?",stil=curses.color_pair(3))
+        while cevap != ord("1") and cevap != ord("2"):
+            cevap = stdscr.getch()
+        if cevap == ord("1"):
+            try:
+                with open(f"{oyuncu}.json", 'r') as fff:
+                    data = json.load(fff)
+                oyuncu.save_yukle(data)
+            except:
+                yazci(stdscr, 1.25, "Save dosyası yüklenemedi.", stil= curses.color_pair(2))
+    oyuncu.save()
 
-    stdscr.clear()
-    yazc(stdscr, "Herkes senin uyanmanı bekliyordu @.")
+
+
+
+
+
+
+    ### 1. Bölüm ###
+    
+    if oyuncu.bolum == 1:
+        stdscr.clear()
+        yazc(stdscr, "Herkes senin uyanmanı bekliyordu @.")
+
+
+    elif oyuncu.bolum == 2:
+        pass
+
+    else:
+        yazci(stdscr, 2, "Sanırım", " ... ", " kayboldun.")
 
 
     stdscr.getch()
+    oyuncu.save_sil()
     win.destroy()
 
 

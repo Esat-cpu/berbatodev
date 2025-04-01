@@ -2,4 +2,4 @@
 
 windows-curses==2.4.1
 
-Oyunu kapatmak için, açılan Menü penceresini kapatabilirsiniz.
+
