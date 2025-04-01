@@ -1,8 +1,8 @@
 # Macera Oyunu
 
 from random import randint
-from colorama import init, Fore, Back, Style    # Renkli yazılar için
 from time import sleep
+import curses
 import tkinter as tk
 import threading
 
@@ -45,9 +45,11 @@ class Oyuncu:
     def saldiri(self, hedef):
         hedef.can -= self.atak + (self.atak + randint(0, int(self.atak * self.sans / 100)))
         return f"{self.isim}  {hedef}"
- 
+
+    def __call__(self):
+        return oyuncu.isim
     def __str__(self):
-        return Style.BRIGHT + Fore.CYAN + self.isim + Style.RESET_ALL
+        return oyuncu.isim
 
 
 
@@ -100,24 +102,6 @@ class Sopa(Silah):
 
 
 
-
-def yaz(yazi, /,  *, stil=None, end="\n"):
-    """ Parametre olarak string girilir ve her karakter 0.05 saniye aralıklarla yazılır
-        '@' karakterinin yerine oyuncu adı yazılır.
-        stil parametresine Fore.RED gibi renk özellikleri girilebilir.
-
-    """
-    for i in yazi:
-        if i == "@":
-            yaz(oyuncu.isim, stil=Style.BRIGHT + Fore.CYAN, end="")
-            continue    
-        print(i if not stil else stil + i, end="")
-        sleep(.05)
-    print(end=end)
-
-
-
-
 def pencere():
     """ Oyuncunun menüdeki bilgilerinin yenilenmesini sağlar
         Menüdeki bilgiler her değiştiğinde çağırılmalı.
@@ -161,8 +145,46 @@ def pencere():
 
 
 
+
+def yazc(stdscr, metin:str, y:int= None, x:int= None, stil= curses.COLOR_WHITE) -> None:
+    if y==None and x ==None:
+        y, x = maxy//2, maxx//2 - len(metin)//2
+    if m:= metin.count("@"):
+        x -= m*(len(oyuncu()) -1)
+    for i in metin:
+        if i == "@":
+            curses.init_pair(1, curses.COLOR_CYAN, curses.COLOR_BLACK)
+            yazc(stdscr, oyuncu(), y, x, stil= curses.color_pair(1))
+            x += len(oyuncu())
+            continue
+        stdscr.addstr(y, x, i, stil)
+        stdscr.refresh()
+        x += 1
+        sleep(.05)
+
+
+def yazci(stdscr, sure=1, *args, stil= curses.COLOR_WHITE) -> None:
+    stdscr.clear()
+    uzunluklar = list()
+    for metin in args:
+        uzunluklar.append(len(metin))
+    orta = sum(uzunluklar)
+    y = maxy//2
+    x = maxx//2 - orta//2
+    for i, uzunluk in enumerate(uzunluklar):
+        yazc(stdscr, args[i], y, x, stil=stil)
+        x += uzunluk
+        sleep(sure)
+    stdscr.addstr(chr(187))
+    stdscr.getch()
+
+
+
+
+
+
+
 ### Hazırlık ###
-init(autoreset=True)  # Colorama modülümüzün init fonksiyonu
 
 # Pencere oluşturulur
 win = tk.Tk()
@@ -194,41 +216,52 @@ kapat.place(relx=.75, rely=.9)
 
 
 ### Başlangıç ###
-yaz("Hoşgeldin!", stil=Style.BRIGHT)
 
-def Oyna():
-    global oyuncu
+def Oyna(stdscr):
+    global oyuncu, maxy, maxx
+    maxy, maxx = stdscr.getmaxyx()
+    curses.start_color()
+    curses.init_pair(1, curses.COLOR_CYAN, curses.COLOR_BLACK)  # Oyuncu ismi rengi
+    curses.init_pair(2, curses.COLOR_RED, curses.COLOR_BLACK)   # Kırmızı yazı
+
+    
+
+
+    ### Oyun başlar... ###
+    yazci(stdscr, 1, "Hey", ", sen.", " Sonunda uyandın.")
+
     while True:
-        # Karakter isim belirlemesi
-        yaz("Karakterin için bir isim gir: ", end="")
-        ad = input().strip()
+        stdscr.clear()  # Terminal temizlenir.
+        curses.echo()   # Kullanıcının cevabının ekranda görünmesi
+        soru = "Senin adın nedir? : "
+        yazc(stdscr, soru, y= maxy//2, x=0)
+        ad = stdscr.getstr(maxy//2, len(soru), 22).decode('utf-8')  # maksimum 22 karakterlik isim alınır
         karaliste = ["/", "\\", ",", "@"]
+
         if not ad or any(i in ad for i in karaliste) or ad.isnumeric():
-            yaz("Adam gibi isim gir >:(", stil= Fore.RED + Style.DIM)
+            yazci(stdscr, 0.5, "Benimle dalga mı geçiyorsun!", " Doğru düzgün söyle.", stil= curses.color_pair(2))
             continue
-        elif len(ad) > 20:
-            yaz("20 Karakterden fazla isim giremezsin :(", stil= Fore.RED + Style.DIM)
-            continue
-
-        oyuncu = Oyuncu(ad) # Oyuncu oluşturuldu
-
-        # Oyuncu bilgilerinin menüde gösterilmesi
-        pencere()
-
-        yaz("Merhaba, @!", stil=Style.BRIGHT)
-
-        # yaz("Eyvah, @ 10 hasar aldı!", stil= Fore.RED)
-
-
-
-
-        
-        
-        input("Bitir.")
-        win.destroy()
         break
 
 
+    oyuncu = Oyuncu(ad) # Oyuncu oluşturuldu
+    pencere()   # Oyuncu bilgilerinin menüde gösterilmesi
+    
+
+    """
+    curses.echo() # kullanıcının yazdığı gozuksun
+    text = stdscr.getstr(1, 0, 20).decode('utf-8') # 1.satırda 20 karakterlik bir giriş
+    stdscr.clear()
+    stdscr.addstr(0, 0, f"girilen metin: {text}")
+    stdscr.refresh()
+    """
+
+    stdscr.clear()
+    yazc(stdscr, "Herkes senin uyanmanı bekliyordu @.")
+
+
+    stdscr.getch()
+    win.destroy()
 
 
 
@@ -237,7 +270,7 @@ def Oyna():
 
 
 
-oyna = threading.Thread(target= Oyna, daemon= True)
+oyna = threading.Thread(target= lambda: curses.wrapper(Oyna), daemon= True)
 oyna.start()
 
 win.mainloop()
