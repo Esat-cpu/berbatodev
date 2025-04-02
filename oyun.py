@@ -14,7 +14,7 @@ import os
 class Oyuncu:
     """ Oyuncunun sınıfı.
         100 can, 10 atak gücü (Sopa), %15 şans ile başlanır.
-        Envanter dict türündedir. Sopa ile başlanır
+        Sopa silahı ile başlanır
     """
 
     def __init__(self, isim):
@@ -29,6 +29,7 @@ class Oyuncu:
 
         self.gorevler = list()  # Oyuncunun görevlerini tutan bir list
     
+
     @property
     def data(self) -> dict:
         depo = self.envanter.copy()
@@ -41,6 +42,7 @@ class Oyuncu:
                 "sans": self.sans,
                 }
     
+
     def save(self):
         """ Oyuncunun isminde bir json dosyası oyuncunun bilgileri ile dizine yazdırılır
             Her bölüm sonunda çağırılmalı.
@@ -62,10 +64,12 @@ class Oyuncu:
             self.envantere_ekle(Sopa())
 
 
-
-
     
     def envantere_ekle(self, esya):
+        """ Eşya envantere 1 tane eklenir
+            Eğer eklenecek eşya silah türünde ise var olan silah ile değiştirilir \
+            ve oyuncunun atak gücü değiştirilir.
+        """
         if issubclass(type(esya), Silah):
             self.envanter["Silah"] = esya
             self.atak = esya.atakguc
@@ -77,6 +81,10 @@ class Oyuncu:
             self.envanter[esya] = 1
     
     def kullan(self, esya):
+        """ Eşya envanterde varsa sayısı bir azaltılır
+            Sayısı 0 olursa silinir
+            Eğer eşya başta envanterde yoksa KeyError hatası verilir
+        """
         if esya in self.envanter:
             self.envanter[esya] -= 1
             if not self.envanter[esya]:
@@ -124,6 +132,8 @@ class Silah:
         return self.isim
 
 class Sopa(Silah):
+    """ 10 Atak güçlü silah
+    """
     def __init__(self):
         super().__init__("Sopa", 10)
     
@@ -189,9 +199,10 @@ def yazc(stdscr, metin:str, y:int= None, x:int= None, stil= curses.COLOR_WHITE) 
         "@" karakterinin olduğu yere oyuncunun ismi yazılır.
     """
     y = maxy//2 if y==None else y
-    x = maxx//2 - len(metin)//2 if x==None else x 
-    if m:= metin.count("@"):
-        x -= m*(len(oyuncu()) -1)
+    if x == None:
+        x = maxx//2 - len(metin)//2
+        if "@" in metin:  # Eğer x belirtilmemişse oyuncu ismi uzunluğu hesaba katılarak orta bulunur
+            x -= metin.count("@") * (len(oyuncu()) -1)
     for i in metin:
         if i == "@":
             curses.init_pair(1, curses.COLOR_CYAN, curses.COLOR_BLACK)
@@ -213,14 +224,21 @@ def yazci(stdscr, sure=1, *args, y=None, x=None, stil= curses.COLOR_WHITE, clear
         clear True ise kendisinden önceki yazılar silinir.
         yazci(stdscr, süre, "metinler", stil= white, clear=True)
     """
-    if clear: stdscr.clear()
+    if clear: stdscr.clear() # terminali temizle
+
     uzunluklar = list()
-    for metin in args:
-        uzunluklar.append(len(metin))
+    for metin in args:  # girilen metinlerin uzunluklarını toplam metnin ortasını bulmak için al
+        uzunluk = len(metin)
+        if "@" in metin:
+            uzunluk += metin.count("@") * (len(oyuncu()) - 1)
+        uzunluklar.append(uzunluk)
+
     orta = sum(uzunluklar)
+    # y ve x belirlenmediyse terminalin ortası olarak al
     y = maxy//2 if not y else y
     x = maxx//2 - orta//2 if not x else x
-    for i, uzunluk in enumerate(uzunluklar):
+
+    for i, uzunluk in enumerate(uzunluklar): # girilen her metnin sonunda 'sure' kadar beklenecek şekilde yaz
         yazc(stdscr, args[i], y, x, stil=stil)
         x += uzunluk
         sleep(sure)
@@ -266,7 +284,7 @@ odalar = ("Başlangıç", "Koca Mağara")
 
 def Oyna(stdscr):
     global oyuncu, maxy, maxx
-    maxy, maxx = stdscr.getmaxyx()
+    maxy, maxx = stdscr.getmaxyx()  # terminalin o anki max en, boy büyüklüğünü alır
     curses.start_color()
     curses.init_pair(1, curses.COLOR_CYAN, curses.COLOR_BLACK)  # Oyuncu ismi rengi
     curses.init_pair(2, curses.COLOR_RED, curses.COLOR_BLACK)   # Kırmızı yazı

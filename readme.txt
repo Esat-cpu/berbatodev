@@ -2,4 +2,6 @@
 
 windows-curses==2.4.1
 
-Oyun terminalde başlatılmalı ve terminalin boyutlarının en az 100x25 olması tavsiye edilmektedir. Aksi halde hatalarla karşılaşabilirsiniz.
+Oyun terminalde başlatılmalı ve terminalin boyutlarının en az 100x25 olması tavsiye edilmektedir. 
+Oyun başladıktan sonra terminalin büyüklüğünü değiştirmeyiniz.
+Aksi halde hatalarla karşılaşabilirsiniz.
