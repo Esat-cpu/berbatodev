@@ -9,6 +9,8 @@ import json
 import os
 
 
+### Classlar ###
+
 class Oyuncu:
     """ Oyuncunun sınıfı.
         100 can, 10 atak gücü (Sopa), %15 şans ile başlanır.
@@ -23,10 +25,12 @@ class Oyuncu:
         self.atak = 10
         self.sans = 15
 
-        self.silah = Sopa()
-        self.envanter["Silah"] = self.silah
+        self.envantere_ekle(Sopa())
+
+        self.gorevler = list()  # Oyuncunun görevlerini tutan bir list
     
-    def data(self):
+    @property
+    def data(self) -> dict:
         depo = self.envanter.copy()
         return {"isim": self.isim,
                 "bolum": self.bolum,
@@ -42,7 +46,7 @@ class Oyuncu:
             Her bölüm sonunda çağırılmalı.
         """
         with open(f"{self.isim}.json", 'w') as fff:
-            json.dump(oyuncu.data(), fff, indent= 4)
+            json.dump(oyuncu.data, fff, indent= 4)
 
     def save_sil(self):
         try: os.remove(f"{self.isim}.json")
@@ -131,7 +135,7 @@ class Sopa(Silah):
 
 
 
-
+### Fonksiyolar ###
 
 
 
@@ -197,7 +201,7 @@ def yazc(stdscr, metin:str, y:int= None, x:int= None, stil= curses.COLOR_WHITE) 
         stdscr.addstr(y, x, i, stil)
         stdscr.refresh()
         x += 1
-        sleep(.05)
+        sleep(.04)
 
 
 def yazci(stdscr, sure=1, *args, y=None, x=None, stil= curses.COLOR_WHITE, clear=True) -> None:
@@ -247,9 +251,7 @@ kapat.place(relx=.75, rely=.9)
 
 
 
-
-
-
+odalar = ("Başlangıç", "Koca Mağara")
 
 
 
@@ -269,13 +271,6 @@ def Oyna(stdscr):
     curses.init_pair(1, curses.COLOR_CYAN, curses.COLOR_BLACK)  # Oyuncu ismi rengi
     curses.init_pair(2, curses.COLOR_RED, curses.COLOR_BLACK)   # Kırmızı yazı
     curses.init_pair(3, curses.COLOR_GREEN, curses.COLOR_BLACK) # Yeşil yazı
-
-
-
-
-
-    
-
 
 
 
@@ -321,29 +316,33 @@ def Oyna(stdscr):
 
 
 
+    while True:
+        ### 1. Bölüm ###
+        
+        if oyuncu.bolum == 1:
+            yazci(stdscr, 1, "Herkes senin uyanmanı bekliyordu @.")
+            stdscr.clear()
+
+            oyuncu.save()
 
 
-    ### 1. Bölüm ###
-    
-    if oyuncu.bolum == 1:
-        yazci(stdscr, 1, "Herkes senin uyanmanı bekliyordu @.")
-        stdscr.clear()
+        elif oyuncu.bolum == 2:
+            pass
 
-        oyuncu.save()
+            oyuncu.save()
+        
+        elif oyuncu.bolum == 3:
+            pass
 
+            oyuncu.save()
 
-    elif oyuncu.bolum == 2:
-        pass
-
-        oyuncu.save()
-
-    else:
-        yazci(stdscr, 2, "Sanırım", " ... ", " kayboldun.")
+        else:
+            yazci(stdscr, 2, "Sanırım", " ... ", " kayboldun.")
 
 
-    stdscr.getch()
-    oyuncu.save_sil()
-    win.destroy()
+        stdscr.getch()
+        oyuncu.save_sil()
+        win.destroy()
 
 
 
