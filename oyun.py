@@ -35,7 +35,7 @@ class Oyuncu:
         depo = self.envanter.copy()
         return {"isim": self.isim,
                 "bolum": self.bolum,
-                "silah": depo.pop("Silah", None).__str__(),
+                "Silah": depo.pop("Silah", None).__str__(),
                 "envanter": depo,
                 "can": self.can,
                 "atak": self.atak,
@@ -193,7 +193,7 @@ def pencere():
 
 
 
-def yazc(stdscr, metin:str, y:int= None, x:int= None, stil= curses.COLOR_WHITE) -> None:
+def yazc(metin:str, y:int= None, x:int= None, stil= curses.COLOR_WHITE) -> None:
     """ Verilen metinin her harfi çok bir kısa süre beklenerek yazılır.
         Yer belirtilmez ise terminalin ortasına yazdırılır.
         "@" karakterinin olduğu yere oyuncunun ismi yazılır.
@@ -206,7 +206,7 @@ def yazc(stdscr, metin:str, y:int= None, x:int= None, stil= curses.COLOR_WHITE) 
     for i in metin:
         if i == "@":
             curses.init_pair(1, curses.COLOR_CYAN, curses.COLOR_BLACK)
-            yazc(stdscr, oyuncu(), y, x, stil= curses.color_pair(1))
+            yazc(oyuncu(), y, x, stil= curses.color_pair(1))
             x += len(oyuncu())
             continue
         stdscr.addstr(y, x, i, stil)
@@ -215,14 +215,14 @@ def yazc(stdscr, metin:str, y:int= None, x:int= None, stil= curses.COLOR_WHITE) 
         sleep(.04)
 
 
-def yazci(stdscr, sure=1, *args, y=None, x=None, stil= curses.COLOR_WHITE, clear=True) -> None:
+def yazci(sure=1, *args, y=None, x=None, stil= curses.COLOR_WHITE, clear=True, getch=True) -> None:
     """ Verilen parametreler hepsinin sonunda süre beklenecek şekilde yazdırılır.
         Varsayılan olarak terminalin ortasına yazdırılır.
         İlk parametre curses'in objesi için, ikinci parametre (sure) aralarda ve sonda beklenecek süre (saniye)
         Sonraki isimsiz parametreler yazılacak metinler.
         stil parametresi curses color pairleri için.
         clear True ise kendisinden önceki yazılar silinir.
-        yazci(stdscr, süre, "metinler", stil= white, clear=True)
+        yazci(süre, "metinler", stil= white, clear=True)
     """
     if clear: stdscr.clear() # terminali temizle
 
@@ -239,11 +239,35 @@ def yazci(stdscr, sure=1, *args, y=None, x=None, stil= curses.COLOR_WHITE, clear
     x = maxx//2 - orta//2 if not x else x
 
     for i, uzunluk in enumerate(uzunluklar): # girilen her metnin sonunda 'sure' kadar beklenecek şekilde yaz
-        yazc(stdscr, args[i], y, x, stil=stil)
+        yazc(args[i], y, x, stil=stil)
         x += uzunluk
         sleep(sure)
     stdscr.addstr(chr(187))
-    return stdscr.getch()
+    if getch:
+        return stdscr.getch()
+    else:
+        return None
+
+
+
+
+def sor(soru:str, secenekler:tuple, stil= curses.COLOR_WHITE) -> str:
+    curses.noecho()
+    cevap = yazci(0.1, soru, stil= stil)
+    while all([cevap != ord(i) for i in secenekler]): # seçeneklerden birisi seçildiğinde sonlanan döngü
+        cevap = stdscr.getch()
+    return chr(cevap)
+
+
+
+
+def savas(*dusmanlar):
+    if len(dusmanlar) > 1:
+        ...
+
+
+
+
 
 
 
@@ -282,8 +306,9 @@ odalar = ("Başlangıç", "Koca Mağara")
 
 ### Başlangıç ###
 
-def Oyna(stdscr):
-    global oyuncu, maxy, maxx
+def Oyna(_stdscr):
+    global oyuncu, maxy, maxx, stdscr
+    stdscr = _stdscr # global olarak tanımladık ki dışarıdaki fonksiyonları tanımlarken kullanabilelim
     maxy, maxx = stdscr.getmaxyx()  # terminalin o anki max en, boy büyüklüğünü alır
     curses.start_color()
     curses.init_pair(1, curses.COLOR_CYAN, curses.COLOR_BLACK)  # Oyuncu ismi rengi
@@ -295,18 +320,18 @@ def Oyna(stdscr):
 
     ### Oyun başlar ###
 
-    yazci(stdscr, 1, "Hey", ", sen.", " Sonunda uyandın.")
+    yazci(1, "Hey", ", sen.", " Sonunda uyandın.")
 
     while True:
         stdscr.clear()  # Terminal temizlenir.
         curses.echo()   # Kullanıcının cevabının ekranda görünmesi
         soru = "Senin adın nedir? : "
-        yazc(stdscr, soru, y= maxy//2, x=0)
+        yazc(soru, y= maxy//2, x=0)
         ad = stdscr.getstr(maxy//2, len(soru), 22).decode('utf-8').strip()  # maksimum 22 karakterlik isim alınır
         karaliste = ["/", "\\", ",", "@", ":", "*", ">", "<", "?", "\"", "|"]
 
         if not ad or any(i in ad for i in karaliste) or ad.isnumeric():
-            yazci(stdscr, 0.5, "Benimle dalga mı geçiyorsun!", " Doğru düzgün söyle.", stil= curses.color_pair(2))
+            yazci(0.5, "Benimle dalga mı geçiyorsun!", " Doğru düzgün söyle.", stil= curses.color_pair(2))
             continue
         break
 
@@ -317,17 +342,14 @@ def Oyna(stdscr):
     
 
     if f"{ad}.json" in os.listdir():
-        curses.noecho()
-        cevap = yazci(stdscr, 0.1, "Save dosyası bulundu. Yüklemek ister misin(1) yoksa sıfırdan mı devam(2) edersin?",stil=curses.color_pair(3))
-        while cevap != ord("1") and cevap != ord("2"):
-            cevap = stdscr.getch()
-        if cevap == ord("1"):
+        cevap = sor("Save dosyası bulundu. Yüklemek ister misin(1) yoksa sıfırdan mı devam(2) edersin?", ("1", "2"), stil= curses.color_pair(3))
+        if cevap == "1":
             try:
                 with open(f"{oyuncu}.json", 'r') as fff:
                     data = json.load(fff)
                 oyuncu.save_yukle(data)
             except:
-                yazci(stdscr, 1.25, "Save dosyası yüklenemedi.", stil= curses.color_pair(2))
+                yazci(1.25, "Save dosyası yüklenemedi.", stil= curses.color_pair(2))
     oyuncu.save()
 
 
@@ -338,7 +360,7 @@ def Oyna(stdscr):
         ### 1. Bölüm ###
         
         if oyuncu.bolum == 1:
-            yazci(stdscr, 1, "Herkes senin uyanmanı bekliyordu @.")
+            yazci(1, "Herkes senin uyanmanı bekliyordu @.")
             stdscr.clear()
 
             oyuncu.save()
@@ -355,7 +377,7 @@ def Oyna(stdscr):
             oyuncu.save()
 
         else:
-            yazci(stdscr, 2, "Sanırım", " ... ", " kayboldun.")
+            yazci(2, "Sanırım", " ... ", " kayboldun.")
 
 
         stdscr.getch()
