@@ -128,10 +128,6 @@ class Dusman:
         self.atak = atak
 
     def saldiri(self):
-        hasar = self.atak + randint(0, int(self.atak * 15 / 100))
-        oyuncu.can -= hasar
-        pencere()
-
         hasar = self.atak + randint(0, self.atak * 15 // 100)
         oyuncu.can -= hasar
         if oyuncu.can < 0:
