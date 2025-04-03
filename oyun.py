@@ -58,7 +58,6 @@ class Oyuncu:
         self.bolum = data["bolum"]
         self.envanter = data["envanter"]
         self.can = data["can"]
-        self.atak = data["atak"]
         self.sans = data["sans"]
         if data["Silah"] == "Sopa":
             self.envantere_ekle(Sopa())
@@ -153,10 +152,11 @@ def pencere():
     """ Oyuncunun menüdeki bilgilerinin yenilenmesini sağlar
         Menüdeki bilgiler her değiştiğinde çağırılmalı.
     """
-    global win_isim, win_can, win_sans, win_envanter, win_env
+    global win_isim, win_can, win_atak, win_sans, win_envanter, win_env
     try:
         win_isim.destroy()
         win_can.destroy()
+        win_atak.destroy()
         win_sans.destroy()
         win_envanter.destroy()
         win_env.destroy()
@@ -348,6 +348,7 @@ def Oyna(_stdscr):
                 with open(f"{oyuncu}.json", 'r') as fff:
                     data = json.load(fff)
                 oyuncu.save_yukle(data)
+                pencere()
             except:
                 yazci(1.25, "Save dosyası yüklenemedi.", stil= curses.color_pair(2))
     oyuncu.save()
