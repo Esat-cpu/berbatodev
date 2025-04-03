@@ -61,6 +61,7 @@ class Oyuncu:
         self.sans = data["sans"]
         if data["Silah"] == "Sopa":
             self.envantere_ekle(Sopa())
+        pencere()
 
 
     
@@ -78,6 +79,8 @@ class Oyuncu:
 
         else:
             self.envanter[esya] = 1
+        try: pencere()
+        except NameError: pass # oyuncu ilk oluşturulduğunda hata almamak için
     
     def kullan(self, esya):
         """ Eşya envanterde varsa sayısı bir azaltılır
@@ -90,10 +93,24 @@ class Oyuncu:
                 del self.envanter[esya]
         else:
             raise KeyError
-        
+        if esya == "Yüce Ağaç Meyvesi":
+            self.can += randint(0, 15)
+            if self.can > 100:
+                self.can = 100
+        pencere()
+
+
     def saldiri(self, hedef):
-        hedef.can -= self.atak + (self.atak + randint(0, int(self.atak * self.sans / 100)))
-        return f"{self.isim}  {hedef}"
+        hasar = self.atak + randint(0, self.atak * self.sans // 100)
+        hedef.can -= hasar
+        if hedef.can < 0:
+            hedef.can = 0
+        if hedef.can == 0:
+            yazci(0.4, f"{hedef} {hasar} hasar aldı.", stil= curses.COLOR_MAGENTA, getch= False, clear= False)
+            yazci(0.4, f"{hedef} öldü.", y= maxy//2 + 1, stil= curses.COLOR_MAGENTA)
+        else:
+            yazci(0.4, f"{hedef} {hasar} hasar aldı.", stil= curses.COLOR_MAGENTA)
+
 
     def __call__(self):
         return oyuncu.isim
@@ -102,20 +119,39 @@ class Oyuncu:
 
 
 
+
 class Dusman:
     """ Düşmanlar için ortak sınıf.
     """
-    def __init__(self, can):
+    def __init__(self, can, atak):
         self.can = can
+        self.atak = atak
+
+    def saldiri(self):
+        hasar = self.atak + randint(0, int(self.atak * 15 / 100))
+        oyuncu.can -= hasar
+        pencere()
+
+        hasar = self.atak + randint(0, self.atak * 15 // 100)
+        oyuncu.can -= hasar
+        if oyuncu.can < 0:
+            oyuncu.can = 0
+        if oyuncu.can == 0:
+            yazci(0.4, f"@ {hasar} hasar aldı.", stil= curses.COLOR_RED, getch=False, clear= False)
+            yazci(4, "ÖLDÜN", y= maxy//2 + 1, stil= curses.COLOR_RED)
+            oldun()
+        else:
+            yazci(0.4, f"@ {hasar} hasar aldı.", stil= curses.COLOR_RED)
+        pencere()
 
 
 class Bucur(Dusman):
     """ Bücür isimli düşmanın sınıfı. Nesneler "Bücür" ismine döner.
-        20 canları vardır.
+        25 canları vardır.
     """
     def __init__(self):
         self.isim = "Bücür"
-        super().__init__(20)
+        super().__init__(can= 25, atak= 7)
     
     def __str__(self):
         return self.isim
@@ -252,11 +288,22 @@ def yazci(sure=1, *args, y=None, x=None, stil= curses.COLOR_WHITE, clear=True, g
 
 
 def sor(soru:str, secenekler:tuple, stil= curses.COLOR_WHITE) -> str:
+    """ Soru string olarak verilir
+        Seçenekler string olarak bir tuple içinde verilir, seçenekler tek bir karakterden oluşmalı
+        Seçeneklerden birisi seçilene kadar bir şey yapılmaz
+        Seçeneklerden birisi seçildiğinde (Enter'a basılmasına gerek yoktur) fonksiyon cevaba döner
+    """
     curses.noecho()
     cevap = yazci(0.1, soru, stil= stil)
     while all([cevap != ord(i) for i in secenekler]): # seçeneklerden birisi seçildiğinde sonlanan döngü
         cevap = stdscr.getch()
     return chr(cevap)
+
+
+
+
+def oldun():
+    ...
 
 
 
@@ -348,7 +395,6 @@ def Oyna(_stdscr):
                 with open(f"{oyuncu}.json", 'r') as fff:
                     data = json.load(fff)
                 oyuncu.save_yukle(data)
-                pencere()
             except:
                 yazci(1.25, "Save dosyası yüklenemedi.", stil= curses.color_pair(2))
     oyuncu.save()
