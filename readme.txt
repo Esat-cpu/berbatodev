@@ -1,4 +1,7 @@
 Tek python dosyası olarak istendiğinden tek bir python dosyası olacak şekilde yazılmıştır.
+
+Python versiyonu en az 3.10 olmalıdır.
+
 Şu modüller kullanılmıştır. Kurulu değil ise kurunuz:
 
 windows-curses==2.4.1
