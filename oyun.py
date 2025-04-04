@@ -124,6 +124,7 @@ class Oyuncu:
         hedef.can -= hasar
         if hedef.can < 0:
             hedef.can = 0
+        yenile()
         if hedef.can == 0:
             yazci(0.4, f"{hedef} {hasar} hasar aldı.", stil= curses.color_pair(4), getch= False, clear= False)
             yazci(0.4, f"{hedef} öldü.", y= maxy//2 + 1, stil= curses.color_pair(4), clear= False)
@@ -153,7 +154,7 @@ class Dusman:
             oyuncu.can = 0
         if oyuncu.can == 0:
             yazci(0.4, f"@ {hasar} hasar aldı.", stil= curses.COLOR_RED, getch=False, clear= False)
-            yazci(4, "ÖLDÜN", y= maxy//2 + 1, stil= curses.COLOR_RED, clear= False)
+            yazci(5, "ÖLDÜN", y= maxy//2 + 1, stil= curses.COLOR_RED, clear= False)
         else:
             yazci(0.4, f"@ {hasar} hasar aldı.", stil= curses.COLOR_RED, clear= False)
         pencere()
@@ -161,11 +162,11 @@ class Dusman:
 
 class Bucur(Dusman):
     """ Bücür isimli düşmanın sınıfı. Nesneler "Bücür" ismine döner.
-        25 canları vardır.
+        20 canları vardır.
     """
     def __init__(self):
         self.isim = "Bücür"
-        super().__init__(can= 25, atak= 7)
+        super().__init__(can= 20, atak= 7)
     
     def __str__(self):
         return self.isim
@@ -356,12 +357,11 @@ def savas(*_dusmanlar):
     savasanlar = ""
     dusmanlar = list(_dusmanlar)
 
-    yenile(ilk=True)
-
+    yenile(ilk=True) # yazım animasyonu için
 
     while oyuncu.can and any([dusman.can for dusman in dusmanlar]):
         yenile()
-        sec = sor("Saldır(1)  Yüce Ağaç Meyvesi Ye(2)", ("1", "2"), clear= False, getch= False)
+        sec = sor("Saldır(1)  Yüce Ağaç Meyvesi Ye(2)", ("1", "2"), clear= False)
         
         if sec == "1":
             if len(dusmanlar) > 1: # Düşmanlar 1'den fazla ise hedef seç
@@ -369,7 +369,7 @@ def savas(*_dusmanlar):
                 for sira, dusman in enumerate(dusmanlar, 1):
                     hedefler += f"  {dusman}({sira})"
                 yenile()
-                indx = sor("Saldır:" + hedefler, (str(i) for i in range(1, len(dusmanlar))), clear= False)
+                indx = sor("Saldır:" + hedefler, (str(i) for i in range(1, len(dusmanlar)+1)), clear= False)
                 hedef = dusmanlar[int(indx) - 1]
             else:
                 hedef = dusmanlar[0]
@@ -383,11 +383,12 @@ def savas(*_dusmanlar):
 
 
         elif sec == "2":
+            yenile()
             try:
                 yenilenen = oyuncu.kullan("Yüce Ağaç Meyvesi")
-                yazci(0, f"@ canını {yenilenen} kadar yeniledi. ", y= maxy//2+3, stil= curses.color_pair(3), clear= False, getch= False)
+                yazci(0, f"@ canını {yenilenen} kadar yeniledi. ", stil= curses.color_pair(3), clear= False)
             except KeyError:
-                yazci(0, "Yüce Ağaç Meyven kalmamış.            ", y= maxy//2+3, stil= curses.color_pair(2), clear= False, getch= False)
+                yazci(0, "Yüce Ağaç Meyven kalmamış.", stil= curses.color_pair(2), clear= False)
     if oyuncu.can == 0:
         return "lose"
     else:
@@ -505,21 +506,20 @@ def Oyna(_stdscr):
                         "Bücürleri yenersen eğer biz de kurtulabiliriz.",\
                         "Sonuçta Bücürler seni de tutsak ettiler")
             else:
-                yazci(.5, "Kafana o taş düştükten sonra Bücürler seni mağaraya getirdiler.", stil= diy, getch= False, clear= False)
-                yazci(.5, "Eğer Bücürleri yenersen hepimiz kurtuluruz.", y= maxy//2+1, stil= diy)
                 diyalog("Kafana o taş düştükten sonra Bücürler seni mağaraya getirdiler.",\
                         "Eğer Bücürleri yenersen hepimiz kurtuluruz.")
+            yazci(.5, "Etraf karanlık. Önünde bir tutsak topluluğu görüyorsun.")
             
             sor("Bücürler kim?(1)", ("1", ))
 
-            yazci(1, "Iıı...", " şu çirkin şeyler işte.", "İblislere çalışan.", stil=diy, getch= False)
+            yazci(.7, "Iıı...", " şu çirkin şeyler işte.", " İblislere çalışan.", stil=diy, getch= False)
             yazci(.5, "Onları bir sopayla ancak sen yenebilirsin.", y=maxy//2+1, stil= diy, clear= False)
 
             sor("Neden ben?(1)", ("1", ))
 
 
             diyalog("Çünkü sen kehanetteki elf soyundan gelen savaşçısın.")
-            diyalog("Bir diğeri: ", "Elf soyundan gelenlerin hepsinin öldüğünü sanıyordum.")
+            diyalog("Bir diğeri: Elf soyundan gelenlerin hepsinin öldüğünü sanıyordum.")
             diyalog("Evet hepimiz öyle düşünüyordük",\
                     "Fakat başka kim kafasına o büyüklükte bir taş düştükten sonra hayatta kalabilir?")
             diyalog("Ama görünüşe bakılırsa hafızanı kaybetmişsin.")
@@ -534,14 +534,18 @@ def Oyna(_stdscr):
                     "Bu Yüce Ağaç Meyvelerini al. İyileşmende yardımcı olacaklar.")
             oyuncu.envantere_ekle("Yüce Ağaç Meyvesi")
             oyuncu.envantere_ekle("Yüce Ağaç Meyvesi")
-            yazci(1, "Yüce Ağaç Meyvesi aldın.", "Savaş sırasında saldırmadan hemen önce kullanabilirsin.")
-            yazci(.5, "Şimdi ilk savaşına giriyorsun.")
+            yazci(1, "Yüce Ağaç Meyvesi aldın.", " Savaş sırasında saldırmadan hemen önce kullanabilirsin.")
+            yazci(.5, "Görev: Bücürleri yen.")
+
+            yazci(.5, "Bücürlerden biri takılıp düştü.", " 10 hasar aldı.")
+            bucur3.can -= 10
 
             war = savas(bucur1, bucur2, bucur3)
             if war == "lose":
                 continue
-            elif war == "win":
-                diyalog("You fight well. But this corruption cannot beaten with a blade.")
+
+            yazci(.5, "Görevi tamamladın: Bücürleri yen.")
+            
             
 
             yazci(.5, "evet", stil= diy)
