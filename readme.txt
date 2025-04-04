@@ -10,4 +10,5 @@ Oyun terminalde başlatılmalı ve terminalin boyutlarının en az 100x25 olmas�
 Oyun başladıktan sonra terminalin büyüklüğünü değiştirmeyiniz.
 Oyun çalışırken terminale yazılar yazılırken herhangi bir tuşa basmayınız.
 "»" karakterini gördüğünüzde eğer soru sorulmuyorsa herhangi bir tuşa basarak ilerleyebilirsiniz(soruluyorsa da seçeneklerden birini seçin)
+"»" karakterini görmeden tuşlara basmayınız
 Aksi halde hatalarla karşılaşabilirsiniz.

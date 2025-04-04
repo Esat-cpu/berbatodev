@@ -188,6 +188,12 @@ class Sopa(Silah):
     """
     def __init__(self):
         super().__init__("Sopa", 10)
+
+class Pasli_Kilic(Silah):
+    """ 16 Atak güçlü silah
+    """
+    def __init__(self):
+        super().__init__("Paslı Kılıç", 16)
     
 
 
@@ -348,7 +354,7 @@ def yenile(ilk=False):
         yazci(.04, "@" + savasanlar, y= 4, x= 0, clear= False, getch= False)
     else:
         stdscr.addstr(4, 0, oyuncu(), curses.color_pair(1))
-        stdscr.addstr(4, len(oyuncu())+1, savasanlar)
+        stdscr.addstr(4, len(oyuncu()), savasanlar)
 
 
 dusmanlar = list()
@@ -356,7 +362,6 @@ def savas(*_dusmanlar):
     """ Oyuncu savaşa girdiğinde çağrılacak fonksiyon
     """
     global dusmanlar
-    savasanlar = ""
     dusmanlar = list(_dusmanlar)
 
     yenile(ilk=True) # yazım animasyonu için
@@ -502,7 +507,7 @@ def Oyna(_stdscr):
             yazci(1, "Herkes senin uyanmanı bekliyordu @.", stil= diy)
             stdscr.clear()
 
-            d = sor("Neden?(1)  Neredeyim ben?(2)", ("1", "2"))
+            d = sor("'Neden?'(1)  'Neredeyim ben?'(2)", ("1", "2"))
             if d == "1":
                 diyalog("Bizi kendin ile beraber kurtarabilirsin de ondan.",\
                         "Bücürleri yenersen eğer biz de kurtulabiliriz.",\
@@ -512,22 +517,23 @@ def Oyna(_stdscr):
                         "Eğer Bücürleri yenersen hepimiz kurtuluruz.")
             yazci(.5, "Etraf karanlık. Önünde bir tutsak topluluğu görüyorsun.")
             
-            sor("Bücürler kim?(1)", ("1", ))
+            sor("'Bücürler kim?'(1)", ("1", ))
 
             yazci(.7, "Iıı...", " şu çirkin şeyler işte.", " İblislere çalışan.", stil=diy, getch= False)
             yazci(.5, "Onları bir sopayla ancak sen yenebilirsin.", y=maxy//2+1, stil= diy, clear= False)
 
-            sor("Neden ben?(1)", ("1", ))
+            sor("'Neden ben?'(1)", ("1", ))
 
 
-            diyalog("Çünkü sen kehanetteki elf soyundan gelen savaşçısın.")
+            diyalog("Çünkü sen kehanetteki elf soyundan gelen savaşçısın. Bir elf ")
             diyalog("Bir diğeri: Elf soyundan gelenlerin hepsinin öldüğünü sanıyordum.")
             diyalog("Evet hepimiz öyle düşünüyordük",\
-                    "Fakat başka kim kafasına o büyüklükte bir taş düştükten sonra hayatta kalabilir?")
+                    "Fakat başka kim kafasına o büyüklükte bir taş düştükten sonra hayatta kalabilir?",\
+                    "Hem bakın, bir elf kolyesi takıyor.")
             diyalog("Ama görünüşe bakılırsa hafızanı kaybetmişsin.")
             diyalog("İblis soyundan gelenler elf soyundan gelenlerin hepsini katlettiler",\
                     "Ama kehanete göre Elf soyundan bir savaşçı hayatta kalacak",\
-                    "ve iblislerin hepsini kesip hükümdarlıklarını sonlandıracak.")
+                    "ve iblisleri kesip hükümdarlıklarını sonlandıracak.")
             diyalog("Bücür: Abelovulobuleybubinaenaleyh")
             bucur1 = Bucur()
             bucur2 = Bucur()
@@ -549,24 +555,49 @@ def Oyna(_stdscr):
             yazci(.5, "Görevi tamamladın: Bücürleri yen.")
             oyuncu.sans += 2
             pencere()
-            yazci(.5, "2 Şans puanı kazandın.")
+            yazci(.7, "2 Şans puanı kazandın.")
             
+            diyalog("Gördünüz mü o olduğunu söylemiştim")
+
+            sor("'Sanırım sana iki meyve borcum var.'(1)", ("1", ))
+            diyalog("Yüce Ağaç Meyveleri insanlara zararlıdır. Sadece Elf soyundan gelenler için oldukça faydalıdır.",\
+                    "O yüzden dert etme.",\
+                    "Ama dikkat et iblis soyundan olanların eline geçmesin.",\
+                    "Onlarda da Elfler kadar olmasa da işe yaradığını duymuştum.")
+
+            diyalog("Biz şimdi kasabamıza geri dönüyoruz. Daha fazla Bücür gelmeden gitmeliyiz.")
+            diyalog("Sen de Güney tarafına doğru ilerleyebilirsin.",\
+                    "İblis soyundan gelen 5 savaşçıdan birinin kalesi ordadır.")
+
+            sor("'Peki ben o tarafa gidiyorum.'(1)", ("1", ))
+            diyalog("Hoşçakal savaşçı! Umarım yine karşılaşırız.")
+            yazci(.5, "Bir daha birbirinizi hiç görmediniz...")
+            d = sor("Yola çık(1)  Bücürlerin cesetlerini ara(2)", ("1", "2"))
             
-            
+            if d == "2":
+                oyuncu.envantere_ekle(Pasli_Kilic())
+                yazci(.5, "Paslı Kılıç buldun.")
+            yazci(.5, "İlk İblis Savaşçının Kalesine doğru yola çıktın.")
 
-            yazci(.5, "evet", stil= diy)
-
-
-
-
+            oyuncu.bolum += 1
             oyuncu.save()
+            yazci(.1, "Kaydediliyor...", getch= False)
+
+
+
+
 
 
         elif oyuncu.bolum == 2:
             yazci(2, "2. Bölüm", getch= False)
 
             oyuncu.save()
-        
+
+
+
+
+
+
         elif oyuncu.bolum == 3:
             pass
 
@@ -576,7 +607,6 @@ def Oyna(_stdscr):
             yazci(2, "Sanırım", " ... ", " kayboldun.")
 
 
-        oyuncu.save_sil()
         win.destroy()
 
 
