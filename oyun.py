@@ -288,8 +288,8 @@ def yazci(sure=1, *args, y=None, x=None, stil= curses.COLOR_WHITE, clear=True, g
 
     orta = sum(uzunluklar)
     # y ve x belirlenmediyse terminalin ortası olarak al
-    y = maxy//2 if not y else y
-    x = maxx//2 - orta//2 if not x else x
+    y = maxy//2 if y == None else y
+    x = maxx//2 - orta//2 if x == None else x
 
     for i, uzunluk in enumerate(uzunluklar): # girilen her metnin sonunda 'sure' kadar beklenecek şekilde yaz
         yazc(args[i], y, x, stil=stil)
@@ -302,16 +302,23 @@ def yazci(sure=1, *args, y=None, x=None, stil= curses.COLOR_WHITE, clear=True, g
         return None
 
 
+def diyalog(*metinler):
+    stdscr.clear()
+    for i, metin in enumerate(metinler):
+        yazci(.5, metin, y= maxy//2+i, stil= diy, getch= False, clear= False)
+    stdscr.addstr(chr(187))
+    stdscr.getch()
 
 
-def sor(soru: str, secenekler: tuple, stil= curses.COLOR_WHITE, clear= True, getch= True) -> str:
+
+def sor(soru: str, secenekler: tuple, stil= curses.COLOR_WHITE, clear= True) -> str:
     """ Soru string olarak verilir
         Seçenekler string olarak bir tuple içinde verilir, seçenekler tek bir karakterden oluşmalı ("1", "2") gibi
         Seçeneklerden birisi seçilene kadar bir şey yapılmaz
         Seçeneklerden birisi seçildiğinde (Enter'a basılmasına gerek yoktur) fonksiyon cevaba döner
     """
     curses.noecho()
-    cevap = yazci(0.1, soru, stil= stil, clear= clear, getch= getch)
+    cevap = yazci(0.1, soru, stil= stil, clear= clear)
     while all([cevap != ord(i) for i in secenekler]): # seçeneklerden birisi seçildiğinde sonlanan döngü
         cevap = stdscr.getch()
     return chr(cevap)
@@ -319,35 +326,36 @@ def sor(soru: str, secenekler: tuple, stil= curses.COLOR_WHITE, clear= True, get
 
 
 
+def yenile(ilk=False):
+    """ Savaş sırasında ekran temizlenip oyuncunun ve düşmanların canları gösterilir
+        Düşmanın canı 0 ise canı gösterilmez ve mevcut savaş için düşman listesinden çıkarılır
+    """
+    stdscr.clear()
+
+    savasanlar = f":{kalp}{oyuncu.can}" # bundan hemen önce oyuncu ismi yazdırılacak
+
+    for sira, dusman in enumerate(dusmanlar):
+        # enumerate kullandığımızdan ötürü for döngüsü içinde liste uzunluğu değişimi bizi etkilemedi
+        if dusman.can == 0:
+            del dusmanlar[sira]
+            continue
+        savasanlar += f"  {dusman}:{kalp}{dusman.can}"
+
+    if ilk:
+        yazci(.04, "@" + savasanlar, y= 4, x= 0, clear= False, getch= False)
+    else:
+        stdscr.addstr(4, 0, oyuncu(), curses.color_pair(1))
+        stdscr.addstr(4, len(oyuncu())+1, savasanlar)
 
 
+dusmanlar = list()
 def savas(*_dusmanlar):
     """ Oyuncu savaşa girdiğinde çağrılacak fonksiyon
     """
+    global dusmanlar
     savasanlar = ""
     dusmanlar = list(_dusmanlar)
 
-    def yenile(ilk=False):
-        """ Savaş sırasında ekran temizlenip oyuncunun ve düşmanların canları gösterilir
-            Düşmanın canı 0 ise canı gösterilmez ve mevcut savaş için düşman listesinden çıkarılır
-        """
-        nonlocal savasanlar
-        stdscr.clear()
-
-        savasanlar = f":{kalp}{oyuncu.can}" # bundan hemen önce oyuncu ismi yazdırılacak
-
-        for sira, dusman in enumerate(dusmanlar):
-            # enumerate kullandığımızdan ötürü for döngüsü içinde liste uzunluğu değişimi bizi etkilemedi
-            if dusman.can == 0:
-                del dusmanlar[sira]
-                continue
-            savasanlar += f"  {dusman}:{kalp}{dusman.can}"
-
-        if ilk:
-            yazci(.04, "@" + savasanlar, y= 4, x=0, clear= False, getch= False)
-        else:
-            stdscr.addstr(4, 0, oyuncu(), curses.color_pair(1))
-            stdscr.addstr(4, len(oyuncu())+1, savasanlar)
     yenile(ilk=True)
 
 
@@ -361,7 +369,7 @@ def savas(*_dusmanlar):
                 for sira, dusman in enumerate(dusmanlar, 1):
                     hedefler += f"  {dusman}({sira})"
                 yenile()
-                indx = sor("Saldır:" + hedefler, (str(i) for i in range(1, len(dusmanlar))))
+                indx = sor("Saldır:" + hedefler, (str(i) for i in range(1, len(dusmanlar))), clear= False)
                 hedef = dusmanlar[int(indx) - 1]
             else:
                 hedef = dusmanlar[0]
@@ -377,9 +385,13 @@ def savas(*_dusmanlar):
         elif sec == "2":
             try:
                 yenilenen = oyuncu.kullan("Yüce Ağaç Meyvesi")
-                yazci(0, f"@ canını {yenilenen} kadar yeniledi. ", y= maxy+3, stil= curses.color_pair(3), clear= False, getch= False)
+                yazci(0, f"@ canını {yenilenen} kadar yeniledi. ", y= maxy//2+3, stil= curses.color_pair(3), clear= False, getch= False)
             except KeyError:
-                yazci(0, "Yüce Ağaç Meyven kalmamış.            ", y= maxy+3, stil= curses.color_pair(2), clear= False, getch= False)
+                yazci(0, "Yüce Ağaç Meyven kalmamış.            ", y= maxy//2+3, stil= curses.color_pair(2), clear= False, getch= False)
+    if oyuncu.can == 0:
+        return "lose"
+    else:
+        return "win"
 
         
         
@@ -427,21 +439,23 @@ odalar = ("Başlangıç", "Koca Mağara")
 ### Başlangıç ###
 
 def Oyna(_stdscr):
-    global oyuncu, maxy, maxx, stdscr
+    global oyuncu, maxy, maxx, stdscr, diy
     stdscr = _stdscr # global olarak tanımladık ki dışarıdaki fonksiyonları tanımlarken kullanabilelim
     maxy, maxx = stdscr.getmaxyx()  # terminalin o anki max en, boy büyüklüğünü alır
     curses.start_color()
     curses.init_pair(1, curses.COLOR_CYAN, curses.COLOR_BLACK)      # Oyuncu ismi rengi
-    curses.init_pair(2, curses.COLOR_RED, curses.COLOR_BLACK)       # Kırmızı yazı
-    curses.init_pair(3, curses.COLOR_GREEN, curses.COLOR_BLACK)     # Yeşil yazı
-    curses.init_pair(4, curses.COLOR_MAGENTA, curses.COLOR_BLACK)   # Mor yazı
+    curses.init_pair(2, curses.COLOR_RED, curses.COLOR_BLACK)       # Kırmızı yazı      olumsuz bir şey olduğunda
+    curses.init_pair(3, curses.COLOR_GREEN, curses.COLOR_BLACK)     # Yeşil yazı        genelde yararlı şeylerde
+    curses.init_pair(4, curses.COLOR_MAGENTA, curses.COLOR_BLACK)   # Mor yazı          hasar verdiğinde
+    curses.init_pair(5, curses.COLOR_YELLOW, curses.COLOR_BLACK)    # Sarı yazı         diyaloglarda
+    diy = curses.color_pair(5)      # bunu değişkene aldık çünkü çok kullanabiliriz
 
 
 
 
     ### Oyun başlar ###
 
-    yazci(1, "Hey", ", sen.", " Sonunda uyandın.")
+    yazci(1, "Hey", ", sen.", " Sonunda uyandın.", stil= diy)
 
     while True:
         stdscr.clear()  # Terminal temizlenir.
@@ -479,16 +493,67 @@ def Oyna(_stdscr):
 
     while True:
         ### 1. Bölüm ###
+        yazci(2, "1. Bölüm", getch= False)
         
         if oyuncu.bolum == 1:
-            yazci(1, "Herkes senin uyanmanı bekliyordu @.")
+            yazci(1, "Herkes senin uyanmanı bekliyordu @.", stil= diy)
             stdscr.clear()
+
+            d = sor("Neden?(1)  Neredeyim ben?(2)", ("1", "2"))
+            if d == "1":
+                diyalog("Bizi kendin ile beraber kurtarabilirsin de ondan.",\
+                        "Bücürleri yenersen eğer biz de kurtulabiliriz.",\
+                        "Sonuçta Bücürler seni de tutsak ettiler")
+            else:
+                yazci(.5, "Kafana o taş düştükten sonra Bücürler seni mağaraya getirdiler.", stil= diy, getch= False, clear= False)
+                yazci(.5, "Eğer Bücürleri yenersen hepimiz kurtuluruz.", y= maxy//2+1, stil= diy)
+                diyalog("Kafana o taş düştükten sonra Bücürler seni mağaraya getirdiler.",\
+                        "Eğer Bücürleri yenersen hepimiz kurtuluruz.")
+            
+            sor("Bücürler kim?(1)", ("1", ))
+
+            yazci(1, "Iıı...", " şu çirkin şeyler işte.", "İblislere çalışan.", stil=diy, getch= False)
+            yazci(.5, "Onları bir sopayla ancak sen yenebilirsin.", y=maxy//2+1, stil= diy, clear= False)
+
+            sor("Neden ben?(1)", ("1", ))
+
+
+            diyalog("Çünkü sen kehanetteki elf soyundan gelen savaşçısın.")
+            diyalog("Bir diğeri: ", "Elf soyundan gelenlerin hepsinin öldüğünü sanıyordum.")
+            diyalog("Evet hepimiz öyle düşünüyordük",\
+                    "Fakat başka kim kafasına o büyüklükte bir taş düştükten sonra hayatta kalabilir?")
+            diyalog("Ama görünüşe bakılırsa hafızanı kaybetmişsin.")
+            diyalog("İblis soyundan gelenler elf soyundan gelenlerin hepsini katlettiler",\
+                    "Ama kehanete göre Elf soyundan bir savaşçı hayatta kalacak",\
+                    "ve iblislerin hepsini kesip hükümdarlıklarını sonlandıracak.")
+            diyalog("Bücür: Abelovulobuleybubinaenaleyh")
+            bucur1 = Bucur()
+            bucur2 = Bucur()
+            bucur3 = Bucur()
+            diyalog("Sanırım Bücürlerle savaştığın kısma geldik.",\
+                    "Bu Yüce Ağaç Meyvelerini al. İyileşmende yardımcı olacaklar.")
+            oyuncu.envantere_ekle("Yüce Ağaç Meyvesi")
+            oyuncu.envantere_ekle("Yüce Ağaç Meyvesi")
+            yazci(1, "Yüce Ağaç Meyvesi aldın.", "Savaş sırasında saldırmadan hemen önce kullanabilirsin.")
+            yazci(.5, "Şimdi ilk savaşına giriyorsun.")
+
+            war = savas(bucur1, bucur2, bucur3)
+            if war == "lose":
+                continue
+            elif war == "win":
+                diyalog("You fight well. But this corruption cannot beaten with a blade.")
+            
+
+            yazci(.5, "evet", stil= diy)
+
+
+
 
             oyuncu.save()
 
 
         elif oyuncu.bolum == 2:
-            pass
+            yazci(2, "2. Bölüm", getch= False)
 
             oyuncu.save()
         
@@ -501,7 +566,6 @@ def Oyna(_stdscr):
             yazci(2, "Sanırım", " ... ", " kayboldun.")
 
 
-        stdscr.getch()
         oyuncu.save_sil()
         win.destroy()
 
