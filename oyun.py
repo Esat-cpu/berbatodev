@@ -125,10 +125,10 @@ class Oyuncu:
         if hedef.can < 0:
             hedef.can = 0
         if hedef.can == 0:
-            yazci(0.4, f"{hedef} {hasar} hasar aldı.", stil= curses.COLOR_MAGENTA, getch= False, clear= False)
-            yazci(0.4, f"{hedef} öldü.", y= maxy//2 + 1, stil= curses.COLOR_MAGENTA, clear= False)
+            yazci(0.4, f"{hedef} {hasar} hasar aldı.", stil= curses.color_pair(4), getch= False, clear= False)
+            yazci(0.4, f"{hedef} öldü.", y= maxy//2 + 1, stil= curses.color_pair(4), clear= False)
         else:
-            yazci(0.4, f"{hedef} {hasar} hasar aldı.", stil= curses.COLOR_MAGENTA, clear= False)
+            yazci(0.4, f"{hedef} {hasar} hasar aldı.", stil= curses.color_pair(4), clear= False)
 
 
     def __call__(self):
@@ -431,9 +431,10 @@ def Oyna(_stdscr):
     stdscr = _stdscr # global olarak tanımladık ki dışarıdaki fonksiyonları tanımlarken kullanabilelim
     maxy, maxx = stdscr.getmaxyx()  # terminalin o anki max en, boy büyüklüğünü alır
     curses.start_color()
-    curses.init_pair(1, curses.COLOR_CYAN, curses.COLOR_BLACK)  # Oyuncu ismi rengi
-    curses.init_pair(2, curses.COLOR_RED, curses.COLOR_BLACK)   # Kırmızı yazı
-    curses.init_pair(3, curses.COLOR_GREEN, curses.COLOR_BLACK) # Yeşil yazı
+    curses.init_pair(1, curses.COLOR_CYAN, curses.COLOR_BLACK)      # Oyuncu ismi rengi
+    curses.init_pair(2, curses.COLOR_RED, curses.COLOR_BLACK)       # Kırmızı yazı
+    curses.init_pair(3, curses.COLOR_GREEN, curses.COLOR_BLACK)     # Yeşil yazı
+    curses.init_pair(4, curses.COLOR_MAGENTA, curses.COLOR_BLACK)   # Mor yazı
 
 
 
