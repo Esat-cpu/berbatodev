@@ -135,7 +135,6 @@ class Dusman:
         if oyuncu.can == 0:
             yazci(0.4, f"@ {hasar} hasar aldı.", stil= curses.COLOR_RED, getch=False, clear= False)
             yazci(4, "ÖLDÜN", y= maxy//2 + 1, stil= curses.COLOR_RED)
-            oldun()
         else:
             yazci(0.4, f"@ {hasar} hasar aldı.", stil= curses.COLOR_RED)
         pencere()
@@ -223,18 +222,22 @@ def pencere():
 
 
 
-
+kalp = "❤ " # u\2764
 
 def yazc(metin:str, y:int= None, x:int= None, stil= curses.COLOR_WHITE) -> None:
     """ Verilen metinin her harfi çok bir kısa süre beklenerek yazılır.
         Yer belirtilmez ise terminalin ortasına yazdırılır.
         "@" karakterinin olduğu yere oyuncunun ismi yazılır.
+        "£" karakterinin olduğu yere ❤ karakteri konur
     """
     y = maxy//2 if y==None else y
     if x == None:
         x = maxx//2 - len(metin)//2
         if "@" in metin:  # Eğer x belirtilmemişse oyuncu ismi uzunluğu hesaba katılarak orta bulunur
             x -= metin.count("@") * (len(oyuncu()) -1)
+
+    metin = metin.replace("£", kalp)
+
     for i in metin:
         if i == "@":
             curses.init_pair(1, curses.COLOR_CYAN, curses.COLOR_BLACK)
@@ -283,9 +286,9 @@ def yazci(sure=1, *args, y=None, x=None, stil= curses.COLOR_WHITE, clear=True, g
 
 
 
-def sor(soru:str, secenekler:tuple, stil= curses.COLOR_WHITE) -> str:
+def sor(soru: str, secenekler: tuple, stil= curses.COLOR_WHITE) -> str:
     """ Soru string olarak verilir
-        Seçenekler string olarak bir tuple içinde verilir, seçenekler tek bir karakterden oluşmalı
+        Seçenekler string olarak bir tuple içinde verilir, seçenekler tek bir karakterden oluşmalı ("1", "2") gibi
         Seçeneklerden birisi seçilene kadar bir şey yapılmaz
         Seçeneklerden birisi seçildiğinde (Enter'a basılmasına gerek yoktur) fonksiyon cevaba döner
     """
@@ -298,15 +301,27 @@ def sor(soru:str, secenekler:tuple, stil= curses.COLOR_WHITE) -> str:
 
 
 
-def oldun():
-    ...
-
-
 
 
 def savas(*dusmanlar):
-    if len(dusmanlar) > 1:
-        ...
+    """ Oyuncu savaşa girdiğinde çağrılacak fonksiyon
+    """
+    savasanlar = f"@:{kalp}{oyuncu.can}"
+    for dusman in dusmanlar:
+        savasanlar += f"  {dusman}"
+    while oyuncu.can and any([dusman.can for dusman in dusmanlar]):
+        
+
+        if len(dusmanlar) > 1: # Düşmanlar 1'den fazla ise hedef seç
+            hedefler = ""
+            for sira, dusman in enumerate(dusmanlar, 1):
+                hedefler += f"  {dusman}({sira})"
+            indx = sor("Saldır:" + hedefler, (str(i) for i in range(1, len(dusmanlar))))
+            hedef = dusmanlar[int(indx) - 1]
+        else:
+            hedef = dusmanlar[0]
+        
+
 
 
 
@@ -371,7 +386,7 @@ def Oyna(_stdscr):
         soru = "Senin adın nedir? : "
         yazc(soru, y= maxy//2, x=0)
         ad = stdscr.getstr(maxy//2, len(soru), 22).decode('utf-8').strip()  # maksimum 22 karakterlik isim alınır
-        karaliste = ["/", "\\", ",", "@", ":", "*", ">", "<", "?", "\"", "|"]
+        karaliste = ["/", "\\", ",", "@", "£", ":", "*", ">", "<", "?", "\"", "|"]
 
         if not ad or any(i in ad for i in karaliste) or ad.isnumeric():
             yazci(0.5, "Benimle dalga mı geçiyorsun!", " Doğru düzgün söyle.", stil= curses.color_pair(2))
