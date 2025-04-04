@@ -65,7 +65,7 @@ class Oyuncu:
 
 
     
-    def envantere_ekle(self, esya):
+    def envantere_ekle(self, esya) -> None:
         """ Eşya envantere 1 tane eklenir
             Eğer eklenecek eşya silah türünde ise var olan silah ile değiştirilir \
             ve oyuncunun atak gücü değiştirilir.
@@ -82,7 +82,7 @@ class Oyuncu:
         try: pencere()
         except NameError: pass # oyuncu ilk oluşturulduğunda hata almamak için
     
-    def kullan(self, esya):
+    def kullan(self, esya) -> None | int:
         """ Eşya envanterde varsa sayısı bir azaltılır
             Sayısı 0 olursa silinir
             Eğer eşya envanterde yoksa KeyError hatası verilir
@@ -115,7 +115,7 @@ class Oyuncu:
         return rtrn
 
 
-    def saldiri(self, hedef):
+    def saldiri(self, hedef) -> None:
         hasar = self.atak + randint(0, self.atak * self.sans // 100)
         hedef.can -= hasar
         if hedef.can < 0:
@@ -265,7 +265,7 @@ def yazc(metin:str, y:int= None, x:int= None, stil= curses.COLOR_WHITE) -> None:
         sleep(.04)
 
 
-def yazci(sure=1, *args, y=None, x=None, stil= curses.COLOR_WHITE, clear=True, getch=True) -> None:
+def yazci(sure=1, *args, y=None, x=None, stil= curses.COLOR_WHITE, clear=True, getch=True) -> None | str:
     """ Verilen parametreler hepsinin sonunda süre beklenecek şekilde yazdırılır.
         Varsayılan olarak terminalin ortasına yazdırılır.
         İlk parametre curses'in objesi için, ikinci parametre (sure) aralarda ve sonda beklenecek süre (saniye)
@@ -292,8 +292,8 @@ def yazci(sure=1, *args, y=None, x=None, stil= curses.COLOR_WHITE, clear=True, g
         yazc(args[i], y, x, stil=stil)
         x += uzunluk
         sleep(sure)
-    stdscr.addstr(chr(187))
     if getch:
+        stdscr.addstr(chr(187))
         return stdscr.getch()
     else:
         return None
@@ -301,14 +301,14 @@ def yazci(sure=1, *args, y=None, x=None, stil= curses.COLOR_WHITE, clear=True, g
 
 
 
-def sor(soru: str, secenekler: tuple, stil= curses.COLOR_WHITE, getch= True) -> str:
+def sor(soru: str, secenekler: tuple, stil= curses.COLOR_WHITE, clear= True, getch= True) -> str:
     """ Soru string olarak verilir
         Seçenekler string olarak bir tuple içinde verilir, seçenekler tek bir karakterden oluşmalı ("1", "2") gibi
         Seçeneklerden birisi seçilene kadar bir şey yapılmaz
         Seçeneklerden birisi seçildiğinde (Enter'a basılmasına gerek yoktur) fonksiyon cevaba döner
     """
     curses.noecho()
-    cevap = yazci(0.1, soru, stil= stil, getch= getch)
+    cevap = yazci(0.1, soru, stil= stil, clear= clear, getch= getch)
     while all([cevap != ord(i) for i in secenekler]): # seçeneklerden birisi seçildiğinde sonlanan döngü
         cevap = stdscr.getch()
     return chr(cevap)
@@ -324,26 +324,33 @@ def savas(*dusmanlar):
     savasanlar = f"@:{kalp}{oyuncu.can}"
     for dusman in dusmanlar:
         savasanlar += f"  {dusman}:{kalp}{dusman.can}"
-    yazci(.04, savasanlar, y= 4, x=0)
+    yazci(.04, savasanlar, y= 4, x=0, getch= False) # Sadece yazma animasyonu için
     while oyuncu.can and any([dusman.can for dusman in dusmanlar]):
-        sec = sor("Saldır(1)  Yüce Ağaç Meyvesi Ye(2)", ("1", "2"), getch= False)
+        stdscr.clear()
+        stdscr.addstr(4, 0, savasanlar)
+        sec = sor("Saldır(1)  Yüce Ağaç Meyvesi Ye(2)", ("1", "2"), clear= False, getch= False)
         
         if sec == "1":
-            ...
+            if len(dusmanlar) > 1: # Düşmanlar 1'den fazla ise hedef seç
+                hedefler = ""
+                for sira, dusman in enumerate(dusmanlar, 1):
+                    hedefler += f"  {dusman}({sira})"
+                indx = sor("Saldır:" + hedefler, (str(i) for i in range(1, len(dusmanlar))))
+                hedef = dusmanlar[int(indx) - 1]
+            else:
+                hedef = dusmanlar[0]
+            
+            oyuncu.saldiri(hedef)
+
+
         elif sec == "2":
             try:
-                oyuncu.kullan("Yüce Ağaç Meyvesi")
+                yenilenen = oyuncu.kullan("Yüce Ağaç Meyvesi")
+                yazci(.4, f"@ canını {yenilenen} kadar yeniledi. ", y= maxy+3, stil= curses.color_pair(3), clear= False, getch= False)
             except KeyError:
-                yazci(.4, "Yüce Ağaç Meyven kalmamış.", y= maxy+3, stil= curses.color_pair(2), clear= False, getch= False)
+                yazci(.4, "Yüce Ağaç Meyven kalmamış.            ", y= maxy+3, stil= curses.color_pair(2), clear= False, getch= False)
 
-        if len(dusmanlar) > 1: # Düşmanlar 1'den fazla ise hedef seç
-            hedefler = ""
-            for sira, dusman in enumerate(dusmanlar, 1):
-                hedefler += f"  {dusman}({sira})"
-            indx = sor("Saldır:" + hedefler, (str(i) for i in range(1, len(dusmanlar))))
-            hedef = dusmanlar[int(indx) - 1]
-        else:
-            hedef = dusmanlar[0]
+        
         
 
 
