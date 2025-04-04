@@ -116,15 +116,19 @@ class Oyuncu:
 
 
     def saldiri(self, hedef) -> None:
+        """ Hedefin canı düşürülür.
+            Ekran temizlenmez.
+            Verilen hasarın bilgisi yazdırılır.
+        """
         hasar = self.atak + randint(0, self.atak * self.sans // 100)
         hedef.can -= hasar
         if hedef.can < 0:
             hedef.can = 0
         if hedef.can == 0:
             yazci(0.4, f"{hedef} {hasar} hasar aldı.", stil= curses.COLOR_MAGENTA, getch= False, clear= False)
-            yazci(0.4, f"{hedef} öldü.", y= maxy//2 + 1, stil= curses.COLOR_MAGENTA)
+            yazci(0.4, f"{hedef} öldü.", y= maxy//2 + 1, stil= curses.COLOR_MAGENTA, clear= False)
         else:
-            yazci(0.4, f"{hedef} {hasar} hasar aldı.", stil= curses.COLOR_MAGENTA)
+            yazci(0.4, f"{hedef} {hasar} hasar aldı.", stil= curses.COLOR_MAGENTA, clear= False)
 
 
     def __call__(self):
@@ -149,9 +153,9 @@ class Dusman:
             oyuncu.can = 0
         if oyuncu.can == 0:
             yazci(0.4, f"@ {hasar} hasar aldı.", stil= curses.COLOR_RED, getch=False, clear= False)
-            yazci(4, "ÖLDÜN", y= maxy//2 + 1, stil= curses.COLOR_RED)
+            yazci(4, "ÖLDÜN", y= maxy//2 + 1, stil= curses.COLOR_RED, clear= False)
         else:
-            yazci(0.4, f"@ {hasar} hasar aldı.", stil= curses.COLOR_RED)
+            yazci(0.4, f"@ {hasar} hasar aldı.", stil= curses.COLOR_RED, clear= False)
         pencere()
 
 
@@ -255,7 +259,6 @@ def yazc(metin:str, y:int= None, x:int= None, stil= curses.COLOR_WHITE) -> None:
 
     for i in metin:
         if i == "@":
-            curses.init_pair(1, curses.COLOR_CYAN, curses.COLOR_BLACK)
             yazc(oyuncu(), y, x, stil= curses.color_pair(1))
             x += len(oyuncu())
             continue
@@ -318,16 +321,38 @@ def sor(soru: str, secenekler: tuple, stil= curses.COLOR_WHITE, clear= True, get
 
 
 
-def savas(*dusmanlar):
+def savas(*_dusmanlar):
     """ Oyuncu savaşa girdiğinde çağrılacak fonksiyon
     """
-    savasanlar = f"@:{kalp}{oyuncu.can}"
-    for dusman in dusmanlar:
-        savasanlar += f"  {dusman}:{kalp}{dusman.can}"
-    yazci(.04, savasanlar, y= 4, x=0, getch= False) # Sadece yazma animasyonu için
-    while oyuncu.can and any([dusman.can for dusman in dusmanlar]):
+    savasanlar = ""
+    dusmanlar = list(_dusmanlar)
+
+    def yenile(ilk=False):
+        """ Savaş sırasında ekran temizlenip oyuncunun ve düşmanların canları gösterilir
+            Düşmanın canı 0 ise canı gösterilmez ve mevcut savaş için düşman listesinden çıkarılır
+        """
+        nonlocal savasanlar
         stdscr.clear()
-        stdscr.addstr(4, 0, savasanlar)
+
+        savasanlar = f":{kalp}{oyuncu.can}" # bundan hemen önce oyuncu ismi yazdırılacak
+
+        for sira, dusman in enumerate(dusmanlar):
+            # enumerate kullandığımızdan ötürü for döngüsü içinde liste uzunluğu değişimi bizi etkilemedi
+            if dusman.can == 0:
+                del dusmanlar[sira]
+                continue
+            savasanlar += f"  {dusman}:{kalp}{dusman.can}"
+
+        if ilk:
+            yazci(.04, "@" + savasanlar, y= 4, x=0, clear= False, getch= False)
+        else:
+            stdscr.addstr(4, 0, oyuncu(), curses.color_pair(1))
+            stdscr.addstr(4, len(oyuncu())+1, savasanlar)
+    yenile(ilk=True)
+
+
+    while oyuncu.can and any([dusman.can for dusman in dusmanlar]):
+        yenile()
         sec = sor("Saldır(1)  Yüce Ağaç Meyvesi Ye(2)", ("1", "2"), clear= False, getch= False)
         
         if sec == "1":
@@ -335,20 +360,26 @@ def savas(*dusmanlar):
                 hedefler = ""
                 for sira, dusman in enumerate(dusmanlar, 1):
                     hedefler += f"  {dusman}({sira})"
+                yenile()
                 indx = sor("Saldır:" + hedefler, (str(i) for i in range(1, len(dusmanlar))))
                 hedef = dusmanlar[int(indx) - 1]
             else:
                 hedef = dusmanlar[0]
             
             oyuncu.saldiri(hedef)
+            yenile()
+            
+            for dusman in dusmanlar:
+                dusman.saldiri()
+                yenile()
 
 
         elif sec == "2":
             try:
                 yenilenen = oyuncu.kullan("Yüce Ağaç Meyvesi")
-                yazci(.4, f"@ canını {yenilenen} kadar yeniledi. ", y= maxy+3, stil= curses.color_pair(3), clear= False, getch= False)
+                yazci(0, f"@ canını {yenilenen} kadar yeniledi. ", y= maxy+3, stil= curses.color_pair(3), clear= False, getch= False)
             except KeyError:
-                yazci(.4, "Yüce Ağaç Meyven kalmamış.            ", y= maxy+3, stil= curses.color_pair(2), clear= False, getch= False)
+                yazci(0, "Yüce Ağaç Meyven kalmamış.            ", y= maxy+3, stil= curses.color_pair(2), clear= False, getch= False)
 
         
         
