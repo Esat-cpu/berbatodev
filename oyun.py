@@ -85,19 +85,34 @@ class Oyuncu:
     def kullan(self, esya):
         """ Eşya envanterde varsa sayısı bir azaltılır
             Sayısı 0 olursa silinir
-            Eğer eşya başta envanterde yoksa KeyError hatası verilir
+            Eğer eşya envanterde yoksa KeyError hatası verilir
         """
+        rtrn = None
         if esya in self.envanter:
             self.envanter[esya] -= 1
-            if not self.envanter[esya]:
+            if self.envanter[esya] == 0:
                 del self.envanter[esya]
         else:
             raise KeyError
         if esya == "Yüce Ağaç Meyvesi":
-            self.can += randint(0, 15)
+            b = oyuncu.sans - 15
+            zar = randint(b, 101)
+            if zar == 100:
+                miktar = 35
+            elif zar > 90:
+                miktar = 30
+            elif zar > 80:
+                miktar = 25
+            else:
+                miktar = 20
+            
+            self.can += miktar
+
             if self.can > 100:
                 self.can = 100
+            rtrn = miktar
         pencere()
+        return rtrn
 
 
     def saldiri(self, hedef):
@@ -286,14 +301,14 @@ def yazci(sure=1, *args, y=None, x=None, stil= curses.COLOR_WHITE, clear=True, g
 
 
 
-def sor(soru: str, secenekler: tuple, stil= curses.COLOR_WHITE) -> str:
+def sor(soru: str, secenekler: tuple, stil= curses.COLOR_WHITE, getch= True) -> str:
     """ Soru string olarak verilir
         Seçenekler string olarak bir tuple içinde verilir, seçenekler tek bir karakterden oluşmalı ("1", "2") gibi
         Seçeneklerden birisi seçilene kadar bir şey yapılmaz
         Seçeneklerden birisi seçildiğinde (Enter'a basılmasına gerek yoktur) fonksiyon cevaba döner
     """
     curses.noecho()
-    cevap = yazci(0.1, soru, stil= stil)
+    cevap = yazci(0.1, soru, stil= stil, getch= getch)
     while all([cevap != ord(i) for i in secenekler]): # seçeneklerden birisi seçildiğinde sonlanan döngü
         cevap = stdscr.getch()
     return chr(cevap)
@@ -308,9 +323,18 @@ def savas(*dusmanlar):
     """
     savasanlar = f"@:{kalp}{oyuncu.can}"
     for dusman in dusmanlar:
-        savasanlar += f"  {dusman}"
+        savasanlar += f"  {dusman}:{kalp}{dusman.can}"
+    yazci(.04, savasanlar, y= 4, x=0)
     while oyuncu.can and any([dusman.can for dusman in dusmanlar]):
+        sec = sor("Saldır(1)  Yüce Ağaç Meyvesi Ye(2)", ("1", "2"), getch= False)
         
+        if sec == "1":
+            ...
+        elif sec == "2":
+            try:
+                oyuncu.kullan("Yüce Ağaç Meyvesi")
+            except KeyError:
+                yazci(.4, "Yüce Ağaç Meyven kalmamış.", y= maxy+3, stil= curses.color_pair(2), clear= False, getch= False)
 
         if len(dusmanlar) > 1: # Düşmanlar 1'den fazla ise hedef seç
             hedefler = ""
