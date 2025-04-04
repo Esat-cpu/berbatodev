@@ -257,7 +257,7 @@ def yazci(sure=1, *args, y=None, x=None, stil= curses.COLOR_WHITE, clear=True, g
         Sonraki isimsiz parametreler yazılacak metinler.
         stil parametresi curses color pairleri için.
         clear True ise kendisinden önceki yazılar silinir.
-        yazci(süre, "metinler", stil= white, clear=True)
+        getch True metinler yazıldıktan sonra herhangi bir karakter girilmesini beklenip beklenmemesini ifade eder
     """
     if clear: stdscr.clear() # terminali temizle
 
