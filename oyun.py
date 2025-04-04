@@ -140,6 +140,7 @@ class Oyuncu:
 
 
 
+
 class Dusman:
     """ Düşmanlar için ortak sınıf.
     """
@@ -152,12 +153,13 @@ class Dusman:
         oyuncu.can -= hasar
         if oyuncu.can < 0:
             oyuncu.can = 0
+        yenile()
+        pencere()
         if oyuncu.can == 0:
             yazci(0.4, f"@ {hasar} hasar aldı.", stil= curses.COLOR_RED, getch=False, clear= False)
             yazci(5, "ÖLDÜN", y= maxy//2 + 1, stil= curses.COLOR_RED, clear= False)
         else:
             yazci(0.4, f"@ {hasar} hasar aldı.", stil= curses.COLOR_RED, clear= False)
-        pencere()
 
 
 class Bucur(Dusman):
@@ -545,6 +547,10 @@ def Oyna(_stdscr):
                 continue
 
             yazci(.5, "Görevi tamamladın: Bücürleri yen.")
+            oyuncu.sans += 2
+            pencere()
+            yazci(.5, "2 Şans puanı kazandın.")
+            
             
             
 
