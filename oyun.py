@@ -145,7 +145,6 @@ class Dusman:
     def __init__(self, can, atak):
         self.can = can
         self.atak = atak
-        self.isim = ...
 
     def saldiri(self):
         hasar = self.atak + randint(0, self.atak * 15 // 100)
