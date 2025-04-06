@@ -772,11 +772,13 @@ def Oyna(_stdscr):
             
             yazci(.4, "Sıradaki kaleye doğru yola çıktın.")
 
-
-
-                
-
+            oyuncu.bolum += 1
             oyuncu.save()
+            yazci(.1, "Kaydediliyor...", getch= False)
+
+
+
+
 
 
 
