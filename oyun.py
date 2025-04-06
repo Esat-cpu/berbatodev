@@ -793,9 +793,9 @@ def Oyna(_stdscr):
                             oyuncu.sans += 20
                             pencere()
                             yazci(.7, "Şansın %20 arttı.")
-                    else:
-                        yazci("O kişi hala orda duruyor.")
-                        sor("Geri dön(1)", ("1", ))
+                            continue
+                    yazci(.4, "O kişi hala orda duruyor.")
+                    sor("Geri dön(1)", ("1", ))
             
             yazci(.5, "Merdivenlerden çıktın.")
 
