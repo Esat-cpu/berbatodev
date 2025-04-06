@@ -181,11 +181,11 @@ class Gardiyan(Dusman):
 
 
 class Belial(Dusman):
-    """ 100 canı, 20 atak gücü vardır
+    """ 110 canı, 20 atak gücü vardır
     """
     def __init__(self):
         self.isim = "Belial"
-        super().__init__(can= 100, atak= 20)
+        super().__init__(can= 110, atak= 20)
 
 
 class M(Dusman):
@@ -194,6 +194,23 @@ class M(Dusman):
     def __init__(self):
         self.isim = "M"
         super().__init__(can= 50, atak= 16)
+
+
+class Shinobi(Dusman):
+    """ 50 canı, 40 atak gücü vardır
+    """
+    def __init__(self):
+        self.isim = "Shinobi"
+        super().__init__(can= 50, atak= 40)
+
+
+class Sparda(Dusman):
+    """ 150 canı 40 atak gücü vardır
+    """
+    def __init__(self):
+        self.isim = "Sparda"
+        super().__init__(can= 150, atak= 40)
+
 
 
 class Silah:
@@ -215,7 +232,14 @@ class Pasli_Kilic(Silah):
     """
     def __init__(self):
         super().__init__("Paslı Kılıç", 16)
-    
+
+class Katana(Dusman):
+    """ 30 atak güçlü silah
+    """
+    def __init__(self):
+        super().__init__("Katana", 30)
+
+
 
 
 
@@ -245,7 +269,7 @@ def pencere():
     win_isim = tk.Label(win, text= oyuncu.isim, bg= "slategrey", fg="blue")
     win_can = tk.Label(win, text= f"Can: {oyuncu.can}", bg= "slategrey", fg= "#ddd310")
     win_atak = tk.Label(win, text= f"Atak Gücü: {oyuncu.atak}", bg= "slategrey", fg= "#ddd310")
-    win_sans = tk.Label(win, text= f"Şans: {oyuncu.sans}", bg= "slategrey", fg= "#ddd310")
+    win_sans = tk.Label(win, text= f"Şans: %{oyuncu.sans}", bg= "slategrey", fg= "#ddd310")
     win_envanter = tk.Label(canvas, text= "Envanter:", bg= "#add8e6")
 
     win_envanterdekiler = ""
@@ -463,9 +487,6 @@ kapat.place(relx=.75, rely=.9)
 
 
 
-odalar = ("Başlangıç", "Koca Mağara")
-
-
 
 
 
@@ -496,11 +517,12 @@ def Oyna(_stdscr):
     ### Oyun başlar ###
 
     yazci(1, "Hey", ", sen.", " Sonunda uyandın.", stil= diy)
+    
 
     while True:
         stdscr.clear()  # Terminal temizlenir.
         curses.echo()   # Kullanıcının cevabının ekranda görünmesi
-        soru = "Senin adın nedir? : "
+        soru = "Senin adın nedir? »: "
         yazc(soru, y= maxy//2, x=0)
         ad = stdscr.getstr(maxy//2, len(soru), 22).decode('utf-8').strip()  # maksimum 22 karakterlik isim alınır
         karaliste = ["/", "\\", ",", "@", "£", ":", "*", ">", "<", "?", "\"", "|"]
@@ -526,6 +548,24 @@ def Oyna(_stdscr):
             except:
                 yazci(1.25, "Save dosyası yüklenemedi.", stil= curses.color_pair(2))
     oyuncu.save()
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -586,21 +626,22 @@ def Oyna(_stdscr):
                 continue
 
             yazci(.5, "Görevi tamamladın: Bücürleri yen.")
-            oyuncu.sans += 2
+            oyuncu.sans += 10
             pencere()
-            yazci(.7, "2 Şans puanı kazandın.")
+            yazci(.7, "Şansın %10 arttı.")
             
             diyalog("Gördünüz mü o olduğunu söylemiştim")
 
             sor("'Sanırım sana iki meyve borcum var.'(1)", ("1", ))
-            diyalog("Yüce Ağaç Meyveleri insanları iyileştirmez. Sadece Elf soyundan gelenler için oldukça faydalıdır.",\
+            diyalog("Yüce Ağaç Meyveleri insanları iyileştirmez.",\
+                    "Sadece Elf soyundan gelenler için oldukça faydalıdır.",\
                     "O yüzden dert etme.",\
                     "Ama dikkat et iblis soyundan olanların eline geçmesin.",\
                     "Onlarda da Elfler kadar olmasa da işe yaradığını duymuştum.")
 
             diyalog("Biz şimdi kasabamıza geri dönüyoruz. Daha fazla Bücür gelmeden gitmeliyiz.")
             diyalog("Sen de Güney tarafına doğru ilerleyebilirsin.",\
-                    "İblis soyundan gelen 4 savaşçıdan birinin kalesi ordadır.")
+                    "İblis soyundan gelen 3 savaşçıdan birinin kalesi ordadır.")
 
             sor("'Peki, ben o tarafa gidiyorum.'(1)", ("1", ))
             diyalog("Hoşçakal savaşçı! Umarım yine karşılaşırız.")
@@ -632,7 +673,7 @@ def Oyna(_stdscr):
             yazci(.5, "Hafızasını kaybetmiş birine göre biraz büyük bir amaç edindin.", y= maxy//2+1, clear= False)
             yazci(.5, "Elf kolyene bakıyorsun ve cesaretleniyorsun.")
 
-            yazci(.5, "Önünde 4 iblisten ilkinin kalesi var. Biraz daha batıda bir kulübe var.", y= maxy//2-1)
+            yazci(.5, "Önünde 3 iblisten ilkinin kalesi var. Biraz daha batıda bir kulübe var.", y= maxy//2-1)
             d = sor("Kaleye devam et(1)  Önce kulübeye git(2)", ("1", "2"), clear= False)
 
             if d == "1":
@@ -647,7 +688,7 @@ def Oyna(_stdscr):
                 diyalog("Marston: @, Seni görmeyeli uzun zaman oldu.")
                 sor("'Bu kaledeki İblisi kesmeye geldim.'(1)", ("1",))
                 diyalog("Marston: Hmm...",\
-                        "Peki soru sormayacağım beni aşan bir işe benziyor",\
+                        "Soru sormayacağım, beni aşan bir işe benziyor",\
                         "Kaleye girmek için önce kapıdaki gardiyanları geçmen gerekiyor.")
                 diyalog("Eğer benim için bir iyilik yapmayı kabul edersen,",\
                         "Sana gardiyanları geçmen için gerekli olan parolayı söylerim",\
@@ -728,10 +769,10 @@ def Oyna(_stdscr):
                             marston_gorev_sonuc = 1
                             oyuncu.envanter["Yüce Ağaç Meyvesi"] -= 1
                             pencere()
-                            yazci(.5, "Görevi tamamladın: Marston'un arkadaşına Yüce Ağaç Meyvesi ver.")
-                            oyuncu.sans += 10
+                            yazci(.5, "Görevi Tamamladın: Marston'un arkadaşına Yüce Ağaç Meyvesi ver.")
+                            oyuncu.sans += 20
                             pencere()
-                            yazci(.7, "10 Şans puanı kazandın.")
+                            yazci(.7, "Şansın %20 arttı.")
                     else:
                         yazci("O kişi hala orda duruyor.")
                         sor("Geri dön(1)", ("1", ))
@@ -785,11 +826,214 @@ def Oyna(_stdscr):
 
 
 
+
+
+
+
+
+
+
         elif oyuncu.bolum == 3:
             ### 3. Bölüm ###
             yazci(2, "3. Bölüm", getch= False)
 
+            yazci(.4, "İlk iblisini öldürdün.")
+            yazci(.4, "Hafızanı kaybettikten sonra yani")
+            yazci(.4, "Belki de önceden onlarcasını öldürmüşsündür.")
+            yazci(.4, "Bilmiyorsun, sadece içinde bir huzursuzluk var.")
+            yazci(.5, "Elf kolyene bakıyorsun ve cesaretleniyorsun.")
+
+            
+            yazci(.4, "Bir sandık buldun.", "Üstünde bir bilmece yazıyor.")
+            d = sor("İblis? 111(1) 222(2) 333(3) 444(4) 555(5) 666(6) 777(7)", ("1", "2", "3", "4", "5", "6", "7"))
+            if d == "6":
+                yazci(.4, "Sandık açılıyor.")
+                oyuncu.envantere_ekle("Yüce Ağaç Meyvesi")
+                oyuncu.envantere_ekle("Yüce Ağaç Meyvesi")
+                yazci(.4, "İki tane Yüce Ağaç Meyvesi aldın.")
+            else:
+                yazci(.4, "Bilemedin.")
+
+
+            yazci(.4, "İkinci kale karşında duruyor.")
+            yazci(.4, "Burayı koruyan bir kişi var sadece")
+            yazci(.4, "İyi kılıç kullanan birine benziyor.")
+
+            shinobi = Shinobi()
+
+            war = savas(shinobi)
+
+            if war == "lose":
+                continue
+            
+            d = sor("Kaleye gir(1)  Shinobinin üstünü ara(2)", ("1", "2"))
+
+            if d == "2":
+                oyuncu.envantere_ekle(Katana())
+                yazci(.4, "Katana buldun!")
+
+            yazci(.4, "Kaleye girdin.")
+
+            hizmetli_gorev = 0
+            hizmetli_gorev_sonuc = 0
+            hizmetli_item = 0
+
+            yazci(.4, "Kalenin hizmetlisi kadın rafların tozunu alıyor.", getch= False)
+            yazci(.4, "Sağında turuncu bir kapı, solunda siyah bir kapı var.", y= maxy//2+1, clear= False)
+
+            turuncu_kapi = 0
+
+            while True:
+                if not hizmetli_gorev_sonuc:
+                    d = sor("Siyah kapı(1)  Turuncu kapı(2)  Kadın ile konuş(3)", ("1", "2", "3"))
+                else:
+                    d = sor("Siyah kapı(1)  Turuncu kapı(2)", ("1", "2"))
+                
+                if d == "1":
+                    yazci(.4, "Kapıdan girdin ve merdivenlerin burada olduğunu gördün")
+                    yazci(.4, "Fakat gardiyanın biri burada bekliyor.")
+                    gardiyan = Gardiyan()
+
+                    war = savas(gardiyan)
+                    if war == "lose":
+                        break
+                        
+                    yazci(.4, "Gardiyandan bir kalem düştü.")
+                    oyuncu.envantere_ekle("Kalem")
+                    hizmetli_item = 1
+                    yazci(.4, "Kalemi aldın.")
+
+                    d2 = sor("Merdivenlere devam et(1)  Geri dön(2)", ("1", "2"))
+
+                    if d2 == "1":
+                        yazci(.4, "Kadın seni durdurdu.", "Sana neden bu kadar çabaladığını sordu.")
+                        diyalog("Kadın: Evet öyle sordum.")
+                        yazci(1, "Hafızasını kaybetmiş birisi için bunu açıklamak zor.", getch= False)
+                        yazci(.7, "Düşünüyorsun")
+                        hafiza()
+                        sleep(.1)
+                        yazci(.5, "Look", ", if you had", " one shot", " or one opportunity", getch= False)
+                        yazci(.5, "to seize everything you ever wanted", " in one moment", " would you capture it", ", or just let it slip?", y= maxy//2+1, clear= False)
+
+                        yazci(0, "Kadın: ... Dur bir dakika bu Eminem deği", getch=False, stil= diy)
+                    elif d2 == "2":
+                        continue
+
+                elif d == "2":
+                    if not turuncu_kapi:
+                        yazci(.4, "Yüce Ağaç Meyveleri görüyorsun")
+                        d1 = sor("Geri dön(1)  Yüce Ağaç Meyvelerini al(2)", ("1", "2"))
+                    else:
+                        yazci(.4, "Sadece yerde yatan Bücürler...")
+                        d1 = sor("Geri dön(1)", ("1", ))
+                    
+                    if d1 == "1":
+                        continue
+                    elif d1 == "2":
+                        turuncu_kapi = 1
+                        oyuncu.envantere_ekle("Yüce Ağaç Meyvesi")
+                        oyuncu.envantere_ekle("Yüce Ağaç Meyvesi")
+                        oyuncu.envantere_ekle("Yüce Ağaç Meyvesi")
+                        oyuncu.envantere_ekle("Yüce Ağaç Meyvesi")
+                        oyuncu.envantere_ekle("Yüce Ağaç Meyvesi")
+                        oyuncu.envantere_ekle("Yüce Ağaç Meyvesi")
+                        oyuncu.envantere_ekle("Yüce Ağaç Meyvesi")
+                        oyuncu.envantere_ekle("Yüce Ağaç Meyvesi")
+                        oyuncu.envantere_ekle("Yüce Ağaç Meyvesi")
+                        yazci(.4, "9 meyve aldın ve birden Bücürler saklandıkları yerlerden çıktı.")
+
+                        bucur1, bucur2, bucur3 = Bucur(), Bucur(), Bucur()
+                        war = savas(bucur1, bucur2, bucur3)
+
+                        if war == "lose":
+                            break
+                        turuncu_kapi = 1
+
+                elif d == "3":
+                    diyalog("Kadın: Keşke kardeşime mektup yazabileceğim bir kalemim olsaydı.")
+                    
+                    if not hizmetli_gorev:
+                        yazci(.4, "Görev: Kadına bir kalem bul.")
+                        hizmetli_gorev = 1
+                    
+                    if hizmetli_item:
+                        sor("Kalemi ver(1)", ("1", ))
+                        oyuncu.kullan("Kalem")
+                        yazci(.4, "Görev Tamamlandı: Kadına bir kalem bul.")
+                        diyalog("Kadın: Çok teşekkür ederim!")
+                        yazci(.4, "Kadın sana dua etti.")
+                        oyuncu.sans += 50
+                        pencere()
+                        yazci(.7, "Şansın %50 arttı.")
+                        hizmetli_gorev_sonuc = 1
+
+
+            if war == "lose":
+                continue
+                
+            yazci(.6, "Merdivenlerden çıkıyorsun.")
+
+            sparda = Sparda()
+
+            yazci(.4, "İblis savaşçı orada.")
+            hafiza()
+            sleep(.1)
+            yazci(.5, "Sparda!", stil= curses.color_pair(2))
+
+            diyalog("Sparda: Belial'dan sonra benim için de geleceğini biliyordum.",\
+                    "Yazık, beraber tüm bu diyarlara hükmedebilirdik.")
+            
+            d = sor("Aynı tarafta olmamız çok saçma(1)  Olabilir, ama kehaneti gerçekleştirmem lazım(2)", ("1", "2"))
+            
+            if d == "1":
+                diyalog("Sparda: En azından kehanetin gerçekleşme ihtimali ortadan kalkana kadar!")
+            elif d == "2":
+                diyalog("Sparda: Sana mı kaldı kehanet? Sonunda sen de öleceksin!")
+            
+            
+            diyalog("Glorfindel ile yaptığın savaş aklını kaçırmana sebep olmuş!")
+            hafiza()
+            sleep(.1)
+
+            diyalog("Bücürler!")
+            bucur1, bucur2 = Bucur(), Bucur()
+
+            war = savas(sparda, bucur1, bucur2)
+
+            if war == "lose":
+                continue
+
+            yazci(1, "Bize karşı savaşmamalıydın..", getch= False)
+            yazci(.4, "Aklın karışık", ", huzursuz hissediyorsun.")
+            yazci(.4, "Düşüncelerini toplamakta zorlanıyorsun.")
+            hafiza()
+            sleep(.1)
+            stdscr.clear()
+            stdscr.refresh()
+            sleep(.1)
+            hafiza()
+            sleep(.1)
+            yazci(.4, "Son İblis kalesine doğru yola çıkıyorsun. Bu seferki İblisi sorgulamayı düşünüyorsun.")
+
+
+            yazci(.4, "Sparda'nın hazinesinde sana uygun bir katana buldun.")
+            oyuncu.envantere_ekle("")
+
+
+            oyuncu.bolum += 1
             oyuncu.save()
+            yazci(.1, "Kaydediliyor...", getch= False)
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -797,6 +1041,7 @@ def Oyna(_stdscr):
 
         elif oyuncu.bolum == 4:
             ### 4. Bölüm ###
+            sleep(2)
             yazci(2, "9. Bölüm", stil= curses.color_pair(2), getch= False)
             yazc("Yani...", y= maxy//2-4, x=maxx//2+10)
             sleep(.4)
@@ -819,6 +1064,8 @@ def Oyna(_stdscr):
         else:
             yazci(2, "Sanırım", " ... ", " kayboldun.")
             oyuncu.save_sil()
+            break
+    win.destroy()
 
 
 
