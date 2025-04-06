@@ -130,7 +130,10 @@ class Oyuncu:
             Ekran temizlenmez.
             Verilen hasarın bilgisi yazdırılır.
         """
-        hasar = self.atak + randint(0, self.atak * self.sans // 100)
+        ust_h = self.atak * self.sans // 100
+        alt_h = self.atak * (self.sans - 45) // 100 # şans 45'ten fazla ise min ek hasar artar
+        alt_h = 0 if alt_h < 0 else alt_h # ek hasar eksi çıkmaz.
+        hasar = self.atak + randint(alt_h, ust_h)
         hedef.can -= hasar
         if hedef.can < 0:
             hedef.can = 0
@@ -169,7 +172,7 @@ class Dusman:
             yazci(0.4, f"@ {hasar} hasar aldı.", stil= curses.color_pair(2), getch=False, clear= False)
             yazci(5, "ÖLDÜN", y= maxy//2 + 1, stil= curses.color_pair(2), clear= False)
         else:
-            yazci(0.4, f"@ {hasar} hasar aldı.", stil= curses.COLOR_RED, clear= False)
+            yazci(0.4, f"@ {hasar} hasar aldı.", stil= curses.color_pair(2), clear= False)
         
     def __str__(self):
         return self.isim
@@ -220,7 +223,7 @@ class Sparda(Dusman):
     """
     def __init__(self):
         self.isim = "Sparda"
-        super().__init__(can= 150, atak= 40)
+        super().__init__(can= 120, atak= 40)
 
 
 
@@ -875,7 +878,10 @@ def Oyna(_stdscr):
                 yazci(.4, "Sandık açılıyor.")
                 oyuncu.envantere_ekle("Yüce Ağaç Meyvesi")
                 oyuncu.envantere_ekle("Yüce Ağaç Meyvesi")
-                yazci(.4, "İki tane Yüce Ağaç Meyvesi aldın.")
+                oyuncu.envantere_ekle("Yüce Ağaç Meyvesi")
+                oyuncu.envantere_ekle("Yüce Ağaç Meyvesi")
+                oyuncu.envantere_ekle("Yüce Ağaç Meyvesi")
+                yazci(.4, "5 tane Yüce Ağaç Meyvesi aldın.")
             else:
                 yazci(.4, "Bilemedin.")
 
@@ -970,7 +976,8 @@ def Oyna(_stdscr):
                         oyuncu.envantere_ekle("Yüce Ağaç Meyvesi")
                         oyuncu.envantere_ekle("Yüce Ağaç Meyvesi")
                         oyuncu.envantere_ekle("Yüce Ağaç Meyvesi")
-                        yazci(.4, "9 meyve aldın ve birden Bücürler saklandıkları yerlerden çıktı.")
+                        oyuncu.envantere_ekle("Yüce Ağaç Meyvesi")
+                        yazci(.4, "10 meyve aldın ve birden Bücürler saklandıkları yerlerden çıktı.")
 
                         bucur1, bucur2, bucur3 = Bucur(), Bucur(), Bucur()
                         war = savas(bucur1, bucur2, bucur3)
@@ -1033,7 +1040,7 @@ def Oyna(_stdscr):
             if war == "lose":
                 continue
 
-            yazci(1, "Bize karşı savaşmamalıydın..", getch= False)
+            yazci(1, "Bize karşı savaşmamalıydın..", stil= diy, getch= False)
             yazci(.4, "Aklın karışık", ", huzursuz hissediyorsun.")
             yazci(.4, "Düşüncelerini toplamakta zorlanıyorsun.")
             hafiza()
@@ -1045,9 +1052,9 @@ def Oyna(_stdscr):
             sleep(.1)
             yazci(.4, "Son İblis kalesine doğru yola çıkıyorsun. Bu seferki İblisi sorgulamayı düşünüyorsun.")
 
-
-            yazci(.4, "Sparda'nın hazinesinde sana uygun bir katana buldun: Rivers Of Blood")
             oyuncu.envantere_ekle(RiversOfBlood())
+            yazci(.4, "Sparda'nın hazinesinde sana uygun bir katana buldun: Rivers Of Blood")
+            
 
 
             oyuncu.bolum += 1
