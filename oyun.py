@@ -59,6 +59,12 @@ class Oyuncu:
         self.sans = data["sans"]
         if data["Silah"] == "Sopa":
             self.envantere_ekle(Sopa())
+        elif data["Silah"] == "Paslı Kılıç":
+            self.envantere_ekle(Pasli_Kilic())
+        elif data["Silah"] == "Katana":
+            self.envantere_ekle(Katana())
+        elif data["Silah"] == "Rivers Of Blood":
+            self.envantere_ekle(RiversOfBlood())
         pencere()
 
 
@@ -109,6 +115,7 @@ class Oyuncu:
             if self.can > 100:
                 self.can = 100
             rtrn = miktar
+        yenile()
         pencere()
         return rtrn
 
@@ -676,6 +683,9 @@ def Oyna(_stdscr):
 
         elif oyuncu.bolum == 2:
             ### 2. Bölüm ###
+            stdscr.clear()
+            stdscr.refresh()
+            sleep(1.5)
             yazci(2, "2. Bölüm", getch= False)
 
             yazci(.5, "İblisleri kesmek üzere yola çıktın.")
@@ -703,7 +713,7 @@ def Oyna(_stdscr):
                 diyalog("Eğer benim için bir iyilik yapmayı kabul edersen,",\
                         "Sana gardiyanları geçmen için gerekli olan parolayı söylerim",\
                         "Onlarla savaşırım diyorsan sen bilirsin.")
-                d = sor("Kabul et(1)  Reddet(2)")
+                d = sor("Kabul et(1)  Reddet(2)", ("1", "2"))
                 marston_gorev = 0
                 marston_gorev_sonuc = 0
                 
@@ -749,7 +759,7 @@ def Oyna(_stdscr):
             yazci(.5, "solunda beyaz bir kapı var.", y= maxy//2+2, clear= False)
 
             meyve_alindi = 0
-            while (d:= sor("Merdivenler(1)  Kırmızı Kapı(2) Beyaz Kapı(3)", ("1", "2", "3"))) != "1":
+            while (d:= sor("Merdivenler(1)  Kırmızı Kapı(2)  Beyaz Kapı(3)", ("1", "2", "3"))) != "1":
                 if d == "2":
                     if not meyve_alindi:
                         yazci(.5, "Önünde Yüce Ağaç Meyveleri var.")
@@ -845,6 +855,9 @@ def Oyna(_stdscr):
 
         elif oyuncu.bolum == 3:
             ### 3. Bölüm ###
+            stdscr.clear()
+            stdscr.refresh()
+            sleep(1.5)
             yazci(2, "3. Bölüm", getch= False)
 
             yazci(.4, "İlk iblisini öldürdün.")
@@ -1051,6 +1064,8 @@ def Oyna(_stdscr):
 
         elif oyuncu.bolum == 4:
             ### 4. Bölüm ###
+            stdscr.clear()
+            stdscr.refresh()
             sleep(2)
             yazci(2, "9. Bölüm", stil= curses.color_pair(2), getch= False)
             yazc("Yani...", y= maxy//2-4, x=maxx//2+10)
