@@ -138,7 +138,7 @@ class Oyuncu:
 
 
 
-
+### Düşman Sınıfları ###
 class Dusman:
     """ Düşmanlar için ortak sınıf.
     """
@@ -160,8 +160,8 @@ class Dusman:
         else:
             yazci(0.4, f"@ {hasar} hasar aldı.", stil= curses.COLOR_RED, clear= False)
         
-        def __str__(self):
-            return self.isim
+    def __str__(self):
+        return self.isim
 
 
 class Bucur(Dusman):
@@ -213,6 +213,7 @@ class Sparda(Dusman):
 
 
 
+### Silah Sınıfları ###
 class Silah:
     def __init__(self, isim, atakguc):
         self.isim = isim
@@ -244,6 +245,11 @@ class RiversOfBlood(Silah):
     """
     def __init__(self):
         super().__init__("Rivers Of Blood", 40)
+
+
+
+
+
 
 
 
