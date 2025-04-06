@@ -52,19 +52,24 @@ class Oyuncu:
         try: os.remove(f"{self.isim}.json")
         except: pass
 
-    def save_yukle(self, data):
-        self.bolum = data["bolum"]
-        self.envanter = data["envanter"]
-        self.can = data["can"]
-        self.sans = data["sans"]
-        if data["Silah"] == "Sopa":
-            self.envantere_ekle(Sopa())
-        elif data["Silah"] == "Paslı Kılıç":
-            self.envantere_ekle(Pasli_Kilic())
-        elif data["Silah"] == "Katana":
-            self.envantere_ekle(Katana())
-        elif data["Silah"] == "Rivers Of Blood":
-            self.envantere_ekle(RiversOfBlood())
+    def save_yukle(self):
+        try:
+            with open(f"{oyuncu}.json", 'r') as fff:
+                data = json.load(fff)
+            self.bolum = data["bolum"]
+            self.envanter = data["envanter"]
+            self.can = data["can"]
+            self.sans = data["sans"]
+            if data["Silah"] == "Sopa":
+                self.envantere_ekle(Sopa())
+            elif data["Silah"] == "Paslı Kılıç":
+                self.envantere_ekle(Pasli_Kilic())
+            elif data["Silah"] == "Katana":
+                self.envantere_ekle(Katana())
+            elif data["Silah"] == "Rivers Of Blood":
+                self.envantere_ekle(RiversOfBlood())
+        except:
+            yazci(1.25, "Save dosyası yüklenemedi.", stil= curses.color_pair(2))
         pencere()
 
 
@@ -161,8 +166,8 @@ class Dusman:
         yenile()
         pencere()
         if oyuncu.can == 0:
-            yazci(0.4, f"@ {hasar} hasar aldı.", stil= curses.COLOR_RED, getch=False, clear= False)
-            yazci(5, "ÖLDÜN", y= maxy//2 + 1, stil= curses.COLOR_RED, clear= False)
+            yazci(0.4, f"@ {hasar} hasar aldı.", stil= curses.color_pair(2), getch=False, clear= False)
+            yazci(5, "ÖLDÜN", y= maxy//2 + 1, stil= curses.color_pair(2), clear= False)
         else:
             yazci(0.4, f"@ {hasar} hasar aldı.", stil= curses.COLOR_RED, clear= False)
         
@@ -211,7 +216,7 @@ class Shinobi(Dusman):
 
 
 class Sparda(Dusman):
-    """ 150 canı 40 atak gücü vardır
+    """ 120 canı 40 atak gücü vardır
     """
     def __init__(self):
         self.isim = "Sparda"
@@ -241,16 +246,16 @@ class Pasli_Kilic(Silah):
         super().__init__("Paslı Kılıç", 16)
 
 class Katana(Silah):
-    """ 30 atak güçlü silah
+    """ 20 atak güçlü silah
     """
     def __init__(self):
-        super().__init__("Katana", 30)
+        super().__init__("Katana", 20)
 
 class RiversOfBlood(Silah):
     """ 40 atak güçlü silah
     """
     def __init__(self):
-        super().__init__("Rivers Of Blood", 40)
+        super().__init__("Rivers Of Blood", 30)
 
 
 
@@ -468,6 +473,7 @@ def savas(*_dusmanlar):
             except KeyError:
                 yazci(0, "Yüce Ağaç Meyven kalmamış.", stil= curses.color_pair(2), clear= False)
     if oyuncu.can == 0:
+        oyuncu.save_yukle()
         return "lose"
     else:
         return "win"
@@ -558,12 +564,7 @@ def Oyna(_stdscr):
     if f"{ad}.json" in os.listdir():
         cevap = sor("Save dosyası bulundu. Yüklemek ister misin(1) yoksa sıfırdan mı devam(2) edersin?", ("1", "2"), stil= curses.color_pair(3))
         if cevap == "1":
-            try:
-                with open(f"{oyuncu}.json", 'r') as fff:
-                    data = json.load(fff)
-                oyuncu.save_yukle(data)
-            except:
-                yazci(1.25, "Save dosyası yüklenemedi.", stil= curses.color_pair(2))
+            oyuncu.save_yukle()
     oyuncu.save()
 
 
@@ -756,7 +757,7 @@ def Oyna(_stdscr):
             yazci(.5, "Kaleye girdin.")
             yazci(.5, "Önünde yukarı çıkan merdivenler,", getch= False)
             yazci(.5, "sağında beyaz bir kapı,", y= maxy//2+1, clear= False, getch= False)
-            yazci(.5, "solunda beyaz bir kapı var.", y= maxy//2+2, clear= False)
+            yazci(.5, "solunda kırmızı bir kapı var.", y= maxy//2+2, clear= False)
 
             meyve_alindi = 0
             while (d:= sor("Merdivenler(1)  Kırmızı Kapı(2)  Beyaz Kapı(3)", ("1", "2", "3"))) != "1":
@@ -794,7 +795,8 @@ def Oyna(_stdscr):
                             pencere()
                             yazci(.7, "Şansın %20 arttı.")
                             continue
-                    yazci(.4, "O kişi hala orda duruyor.")
+                    elif meyve_alindi and marston_gorev_sonuc:
+                        yazci(.4, "O kişi hala orda duruyor.")
                     sor("Geri dön(1)", ("1", ))
             
             yazci(.5, "Merdivenlerden çıktın.")
@@ -905,6 +907,7 @@ def Oyna(_stdscr):
             yazci(.4, "Sağında turuncu bir kapı, solunda siyah bir kapı var.", y= maxy//2+1, clear= False)
 
             turuncu_kapi = 0
+            siyah_kapi = 0
 
             while True:
                 if not hizmetli_gorev_sonuc:
@@ -913,25 +916,28 @@ def Oyna(_stdscr):
                     d = sor("Siyah kapı(1)  Turuncu kapı(2)", ("1", "2"))
                 
                 if d == "1":
-                    yazci(.4, "Kapıdan girdin ve merdivenlerin burada olduğunu gördün")
-                    yazci(.4, "Fakat gardiyanın biri burada bekliyor.")
-                    gardiyan = Gardiyan()
+                    if not siyah_kapi:
+                        yazci(.4, "Kapıdan girdin ve merdivenlerin burada olduğunu gördün")
+                        yazci(.4, "Fakat iki gardiyan burada bekliyor.")
+                        gardiyan1 = Gardiyan()
+                        gardiyan2 = Gardiyan()
 
-                    war = savas(gardiyan)
-                    if war == "lose":
-                        break
+                        war = savas(gardiyan1, gardiyan2)
+                        if war == "lose":
+                            break
                         
-                    yazci(.4, "Gardiyandan bir kalem düştü.")
-                    oyuncu.envantere_ekle("Kalem")
-                    hizmetli_item = 1
-                    yazci(.4, "Kalemi aldın.")
+                        yazci(.4, "Gardiyanların birinden bir kalem düştü.")
+                        oyuncu.envantere_ekle("Kalem")
+                        hizmetli_item = 1
+                        yazci(.4, "Kalemi aldın.")
+                        siyah_kapi = 1
 
                     d2 = sor("Merdivenlere devam et(1)  Geri dön(2)", ("1", "2"))
 
                     if d2 == "1":
                         yazci(.4, "Kadın seni durdurdu.", "Sana neden bu kadar çabaladığını sordu.")
                         diyalog("Kadın: Evet öyle sordum.")
-                        yazci(1, "Hafızasını kaybetmiş birisi için bunu açıklamak zor.", getch= False)
+                        yazci(.3, "Hafızasını kaybetmiş birisi için bunu açıklamak zor.")
                         yazci(.7, "Düşünüyorsun")
                         hafiza()
                         sleep(.1)
@@ -939,6 +945,7 @@ def Oyna(_stdscr):
                         yazci(.5, "to seize everything you ever wanted", " in one moment", " would you capture it", ", or just let it slip?", y= maxy//2+1, clear= False)
 
                         yazci(0, "Kadın: ... Dur bir dakika bu Eminem deği", getch=False, stil= diy)
+                        break
                     elif d2 == "2":
                         continue
 
@@ -985,9 +992,9 @@ def Oyna(_stdscr):
                         yazci(.4, "Görev Tamamlandı: Kadına bir kalem bul.")
                         diyalog("Kadın: Çok teşekkür ederim!")
                         yazci(.4, "Kadın sana dua etti.")
-                        oyuncu.sans += 50
+                        oyuncu.sans += 45
                         pencere()
-                        yazci(.7, "Şansın %50 arttı.")
+                        yazci(.7, "Şansın %45 arttı.")
                         hizmetli_gorev_sonuc = 1
 
 
