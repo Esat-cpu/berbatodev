@@ -233,12 +233,17 @@ class Pasli_Kilic(Silah):
     def __init__(self):
         super().__init__("Paslı Kılıç", 16)
 
-class Katana(Dusman):
+class Katana(Silah):
     """ 30 atak güçlü silah
     """
     def __init__(self):
         super().__init__("Katana", 30)
 
+class RiversOfBlood(Silah):
+    """ 40 atak güçlü silah
+    """
+    def __init__(self):
+        super().__init__("Rivers Of Blood", 40)
 
 
 
@@ -1016,8 +1021,8 @@ def Oyna(_stdscr):
             yazci(.4, "Son İblis kalesine doğru yola çıkıyorsun. Bu seferki İblisi sorgulamayı düşünüyorsun.")
 
 
-            yazci(.4, "Sparda'nın hazinesinde sana uygun bir katana buldun.")
-            oyuncu.envantere_ekle("")
+            yazci(.4, "Sparda'nın hazinesinde sana uygun bir katana buldun: Rivers Of Blood")
+            oyuncu.envantere_ekle(RiversOfBlood())
 
 
             oyuncu.bolum += 1
