@@ -388,7 +388,7 @@ def yazc(metin:str, y:int= None, x:int= None, stil= curses.COLOR_WHITE) -> None:
     if x == None:
         x = maxx//2 - len(metin)//2
         if "@" in metin:  # Eğer x belirtilmemişse oyuncu ismi uzunluğu hesaba katılarak orta bulunur
-            x -= metin.count("@") * (len(oyuncu()) -1)
+            x -= metin.count("@") * (len(oyuncu()) -1) // 2
 
     metin = metin.replace("£", kalp)
 
