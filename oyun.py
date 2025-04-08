@@ -311,7 +311,7 @@ class Katana(Silah):
         super().__init__("Katana", 20)
 
 class RiversOfBlood(Silah):
-    """ 40 atak güçlü silah
+    """ 30 atak güçlü silah
     """
     def __init__(self):
         super().__init__("Rivers Of Blood", 30)
