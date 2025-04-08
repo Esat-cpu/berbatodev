@@ -46,7 +46,7 @@ class Oyuncu:
             Her bölüm sonunda çağırılmalı.
         """
         with open(f"{self.isim}.json", 'w') as fff:
-            json.dump(oyuncu.data, fff, indent= 4)
+            json.dump(self.data, fff, indent= 4)
 
     def save_sil(self):
         try: os.remove(f"{self.isim}.json")
@@ -54,7 +54,7 @@ class Oyuncu:
 
     def save_yukle(self):
         try:
-            with open(f"{oyuncu}.json", 'r') as fff:
+            with open(f"{self()}.json", 'r') as fff:
                 data = json.load(fff)
             self.bolum = data["bolum"]
             self.envanter = data["envanter"]
@@ -94,6 +94,7 @@ class Oyuncu:
     def kullan(self, esya) -> None | int:
         """ Eşya envanterde varsa sayısı bir azaltılır
             Sayısı 0 olursa silinir
+            Eşya Yüce Ağaç Meyvesi ise can yeniler
             Eğer eşya envanterde yoksa KeyError hatası verilir
         """
         rtrn = None
@@ -104,7 +105,7 @@ class Oyuncu:
         else:
             raise KeyError
         if esya == "Yüce Ağaç Meyvesi":
-            b = oyuncu.sans - 15
+            b = self.sans - 15
             zar = randint(b, 101)
             if zar == 100:
                 miktar = 35
@@ -120,7 +121,7 @@ class Oyuncu:
             if self.can > 100:
                 self.can = 100
             rtrn = miktar
-        yenile()
+            yenile()
         pencere()
         return rtrn
 
@@ -146,9 +147,9 @@ class Oyuncu:
 
 
     def __call__(self):
-        return oyuncu.isim
+        return self.isim
     def __str__(self):
-        return oyuncu.isim
+        return self.isim
 
 
 
@@ -224,6 +225,61 @@ class Sparda(Dusman):
     def __init__(self):
         self.isim = "Sparda"
         super().__init__(can= 120, atak= 40)
+
+
+class Glorfindel(Oyuncu):
+    """ Final Boss
+    """
+    def __init__(self):
+        super().__init__("Glorfindel")
+        self.sans = 100
+    
+    def save(): ...
+    def save_sil(): ...
+    def save_yukle(): ...
+    def kullan(): ...
+
+    def saldiri(self) -> None:
+        """ Oyuncunun canı düşürülür.
+            Ekran temizlenmez.
+            Verilen hasarın bilgisi yazdırılır.
+        """
+        while self.can <= 60:
+            try:
+                self.can_yenile()
+            except KeyError:
+                break
+
+        ust_h = self.atak * self.sans // 100
+        alt_h = self.atak * (self.sans - 45) // 100 # şans 45'ten fazla ise min ek hasar artar
+        alt_h = 0 if alt_h < 0 else alt_h # ek hasar eksi çıkmaz.
+        hasar = self.atak + randint(alt_h, ust_h)
+        oyuncu.can -= hasar
+        if oyuncu.can < 0:
+            oyuncu.can = 0
+        yenile()
+        if oyuncu.can == 0:
+            yazci(0.4, f"@ {hasar} hasar aldı.", stil= curses.color_pair(2), getch= False, clear= False)
+            yazci(0.4, "ÖLDÜN", y= maxy//2 + 1, stil= curses.color_pair(2), clear= False)
+        else:
+            yazci(0.4, f"@ {hasar} hasar aldı.", stil= curses.color_pair(2), clear= False)
+        
+    def can_yenile(self) -> None:
+        """ Can yenileme için
+        """
+        esya = "Yüce Ağaç Meyvesi"
+        if esya in self.envanter:
+            self.envanter[esya] -= 1
+            if self.envanter[esya] == 0:
+                del self.envanter[esya]
+        else:
+            raise KeyError
+        
+        self.can += 40
+        if self.can > 100:
+            self.can = 100
+        yenile()
+        yazci(0, "Glorfindel canını 40 kadar yeniledi.", stil= curses.color_pair(2), clear= False)
 
 
 
@@ -472,7 +528,7 @@ def savas(*_dusmanlar):
             yenile()
             try:
                 yenilenen = oyuncu.kullan("Yüce Ağaç Meyvesi")
-                yazci(0, f"@ canını {yenilenen} kadar yeniledi. ", stil= curses.color_pair(3), clear= False)
+                yazci(0, f"@ canını {yenilenen} kadar yeniledi.", stil= curses.color_pair(3), clear= False)
             except KeyError:
                 yazci(0, "Yüce Ağaç Meyven kalmamış.", stil= curses.color_pair(2), clear= False)
     if oyuncu.can == 0:
@@ -533,8 +589,6 @@ def Oyna(_stdscr):
     curses.init_pair(3, curses.COLOR_GREEN, curses.COLOR_BLACK)     # Yeşil yazı        genelde yararlı şeylerde
     curses.init_pair(4, curses.COLOR_MAGENTA, curses.COLOR_BLACK)   # Mor yazı          hasar verdiğinde
     curses.init_pair(5, curses.COLOR_YELLOW, curses.COLOR_BLACK)    # Sarı yazı         diyaloglarda
-    curses.init_pair(6, curses.COLOR_BLACK, curses.COLOR_RED)
-    curses.init_pair(7, curses.COLOR_BLACK, curses.COLOR_MAGENTA)
     diy = curses.color_pair(5)      # bunu değişkene aldık çünkü çok kullanabiliriz
 
 
@@ -776,11 +830,8 @@ def Oyna(_stdscr):
                         continue
                     elif d1 == "2":
                         meyve_alindi = 1
-                        oyuncu.envantere_ekle("Yüce Ağaç Meyvesi")
-                        oyuncu.envantere_ekle("Yüce Ağaç Meyvesi")
-                        oyuncu.envantere_ekle("Yüce Ağaç Meyvesi")
-                        oyuncu.envantere_ekle("Yüce Ağaç Meyvesi")
-                        oyuncu.envantere_ekle("Yüce Ağaç Meyvesi")
+                        for i in range(5):
+                            oyuncu.envantere_ekle("Yüce Ağaç Meyvesi")
                         yazci(.5, "5 Yüce Ağaç Meyvesi aldın.")
                 elif d == "3":
                     yazci(.5, "İçeride birisi var. Oturmuş bekliyor.")
@@ -876,11 +927,8 @@ def Oyna(_stdscr):
             d = sor("İblis? 111(1) 222(2) 333(3) 444(4) 555(5) 666(6) 777(7)", ("1", "2", "3", "4", "5", "6", "7"))
             if d == "6":
                 yazci(.4, "Sandık açılıyor.")
-                oyuncu.envantere_ekle("Yüce Ağaç Meyvesi")
-                oyuncu.envantere_ekle("Yüce Ağaç Meyvesi")
-                oyuncu.envantere_ekle("Yüce Ağaç Meyvesi")
-                oyuncu.envantere_ekle("Yüce Ağaç Meyvesi")
-                oyuncu.envantere_ekle("Yüce Ağaç Meyvesi")
+                for i in range(5):
+                    oyuncu.envantere_ekle("Yüce Ağaç Meyvesi")
                 yazci(.4, "5 tane Yüce Ağaç Meyvesi aldın.")
             else:
                 yazci(.4, "Bilemedin.")
@@ -967,16 +1015,8 @@ def Oyna(_stdscr):
                         continue
                     elif d1 == "2":
                         turuncu_kapi = 1
-                        oyuncu.envantere_ekle("Yüce Ağaç Meyvesi")
-                        oyuncu.envantere_ekle("Yüce Ağaç Meyvesi")
-                        oyuncu.envantere_ekle("Yüce Ağaç Meyvesi")
-                        oyuncu.envantere_ekle("Yüce Ağaç Meyvesi")
-                        oyuncu.envantere_ekle("Yüce Ağaç Meyvesi")
-                        oyuncu.envantere_ekle("Yüce Ağaç Meyvesi")
-                        oyuncu.envantere_ekle("Yüce Ağaç Meyvesi")
-                        oyuncu.envantere_ekle("Yüce Ağaç Meyvesi")
-                        oyuncu.envantere_ekle("Yüce Ağaç Meyvesi")
-                        oyuncu.envantere_ekle("Yüce Ağaç Meyvesi")
+                        for i in range(10):
+                            oyuncu.envantere_ekle("Yüce Ağaç Meyvesi")
                         yazci(.4, "10 meyve aldın ve birden Bücürler saklandıkları yerlerden çıktı.")
 
                         bucur1, bucur2, bucur3 = Bucur(), Bucur(), Bucur()
@@ -1093,10 +1133,90 @@ def Oyna(_stdscr):
             sleep(.2)
             stdscr.clear()
             stdscr.refresh()
-            sleep(4)
+            sleep(1)
             
+            yazci(1, "Bir ruhu ne tanımlar?", getch= False)
+            yazci(.4, "Bazıları ona karanlıkla savaşan, yaşamı için yanan bir kıvılcım der.", y=maxy//2+1, clear= False)
+            yazci(.4, "Peki ya sen o İblisleri öldürdüğünde ne hissettin?")
+            yazci(.4, "Huzursuzluk.")
+            yazci(1, "Elf kolyene bakıyorsun", ", daha da huzursuzlanıyorsun.")
+
+            for i in range(4):
+                hafiza()
+                sleep(.1)
+                stdscr.clear()
+                stdscr.refresh()
+                sleep(.1)
+
+            yazci(.4, "Kaleye geldin.")
+            yazci(.4, "Gardiyanlar ve bücürler var.")
+            yazci(.4, "Seni içeri alıyorlar")
+            yazci(.4, "İblisi sorgulamak için zaman kaybetmeyeceğin için memnunsun.")
+            yazci(.4, "İçeride 6 tane Yüce Ağaç Meyvesi var.")
+            for i in range(6):
+                oyuncu.envantere_ekle("Yüce Ağaç Meyvesi")
+            yazci(.4, "Merdivenden çıkıyorsun.")
+            yazci(.4, "Odada kimse yok.")
+            hafiza()
+            sleep(.1)
+            yazci(.4, "Odanın baş köşesinde duran büyük sandalyeye bir alışkanlıkla oturuyorsun.")
+            for i in range(5):
+                hafiza()
+                sleep(.1)
+                stdscr.clear()
+                stdscr.refresh()
+                sleep(.1)
+            yazci(.4, "Hatırladın.")
+
+            yazci(1, "3. İblis savaşçı sensin.")
+
+            yazci(.4, "Alt kattan sesler geliyor.")
+            yazci(.4, "Tüm gardiyanlar ve bücürler yeniliyor.")
+            yazci(.4, "Glorfindel senin ondan çaldığın kolyeyi ve canını almak için geliyor.")
+
+            glorfindel = Glorfindel()
+
+            glorfindel.envantere_ekle(Katana())
+            for i in range(5):
+                glorfindel.envantere_ekle("Yüce Ağaç Meyvesi")
+
+            diyalog("Glorfindel: @!")
+            diyalog("Buraya kadar!",\
+                    "Baştaki tek kişi olmak için diğer iblisleri öldürdün.",\
+                    "Fakat kehaneti gerçekleştirmek için ben buradayım!")
+            
+            yazci(0, "Elf ile savaş(1)", y= maxy//2-1, getch= False)
+            d = sor("Elfin kazanmasına izin vererek canını ve kolyeyi sun(2)", ("1", "2"), clear= False)
 
 
+            if d == "1":
+                war = savas(glorfindel)
+
+                if war == "lose":
+                    yazci(.4, "Böylece Elf son iblisi ortadan kaldırmış oldu.")
+                    yazci(.4, "Halklar ona hediyeler sundular ve hep mutlu yaşadılar.")
+                    yazci(.4, "Çok da kötü değil", ", değil mi?")
+
+                elif war == "win":
+                    yazci(.4, "Elfi öldürdün.")
+                    yazci(.4, "Ve artık diyarların hakimi olman için engel kalmamıştı.")
+                    yazci(.4, "Ama o kadar iyilik için savaştıktan sonra böyle yapabilir miydin?")
+                    yazci(.4, "Kolyene bakıyorsun ve cesaretleniyorsun.")
+                    yazci(.4, "Ve İblis savaşçı diyarlara hükmeder.")
+            
+            elif d == "2":
+                yazci(.4, "Glorfindel bu hareketine çok şaşırdı.")
+                yazci(.4, "Glorfindel kolyeyi aldı fakat seni öldürmedi.")
+                yazci(.4, "Silahını aldı ve sana normal biri gibi yaşama şansı verdi.")
+                yazci(.4, "Sen de kimliğini değiştirdin. İnsanlar son iblisin öldüğünü düşündü.")
+                yazci(.4, "Seni iblisleri öldürmede Elfe yardım eden bir kahraman olarak tanıdılar.")
+                yazci(.4, "Size hediyeler sundular ve hep mutlu yaşadılar.")
+
+            curses.init_pair(6, curses.COLOR_BLUE, curses.COLOR_BLACK)
+            yazci(0, "SON", stil= curses.color_pair(6))
+            yazci(1, "Oyunu oynadığın için teşekkürler!", stil= curses.color_pair(6))
+            win.destroy()
+            
 
 
 
@@ -1104,14 +1224,8 @@ def Oyna(_stdscr):
             yazci(2, "Sanırım", " ... ", " kayboldun.")
             oyuncu.save_sil()
             break
+
     win.destroy()
-
-
-
-
-
-
-
 
 
 
