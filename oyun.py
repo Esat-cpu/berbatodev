@@ -406,7 +406,7 @@ def yazc(metin:str, y:int= None, x:int= None, stil= curses.COLOR_WHITE) -> None:
 def yazci(sure=1, *args, y=None, x=None, stil= curses.COLOR_WHITE, clear=True, getch=True) -> None | str:
     """ Verilen parametreler hepsinin sonunda süre beklenecek şekilde yazdırılır.
         Varsayılan olarak terminalin ortasına yazdırılır.
-        İlk parametre curses'in objesi için, ikinci parametre (sure) aralarda ve sonda beklenecek süre (saniye)
+        İlk parametre (sure): aralarda ve sonda beklenecek süre (saniye)
         Sonraki isimsiz parametreler yazılacak metinler.
         stil parametresi curses color pairleri için.
         clear True ise kendisinden önceki yazılar silinir.
@@ -478,7 +478,6 @@ def yenile(ilk=False):
     savasanlar = f":{kalp}{oyuncu.can}" # bundan hemen önce oyuncu ismi yazdırılacak
 
     for sira, dusman in enumerate(dusmanlar):
-        # enumerate kullandığımızdan ötürü for döngüsü içinde liste uzunluğu değişimi bizi etkilemedi
         if dusman.can == 0:
             del dusmanlar[sira]
             continue
