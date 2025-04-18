@@ -830,9 +830,9 @@ def Oyna(_stdscr):
                         continue
                     elif d1 == "2":
                         meyve_alindi = 1
-                        for i in range(5):
+                        for i in range(6):
                             oyuncu.envantere_ekle("Yüce Ağaç Meyvesi")
-                        yazci(.5, "5 Yüce Ağaç Meyvesi aldın.")
+                        yazci(.5, "6 Yüce Ağaç Meyvesi aldın.")
                 elif d == "3":
                     yazci(.5, "İçeride birisi var. Oturmuş bekliyor.")
                     
