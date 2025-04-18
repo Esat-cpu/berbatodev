@@ -753,6 +753,9 @@ def Oyna(_stdscr):
             yazci(.5, "Önünde 3 iblisten ilkinin kalesi var. Biraz daha batıda bir kulübe var.", y= maxy//2-1)
             d = sor("Kaleye devam et(1)  Önce kulübeye git(2)", ("1", "2"), clear= False)
 
+            marston_gorev = 0
+            marston_gorev_sonuc = 0
+
             if d == "1":
                 pass
             elif d == "2":
@@ -771,8 +774,6 @@ def Oyna(_stdscr):
                         "Sana gardiyanları geçmen için gerekli olan parolayı söylerim",\
                         "Onlarla savaşırım diyorsan sen bilirsin.")
                 d = sor("Kabul et(1)  Reddet(2)", ("1", "2"))
-                marston_gorev = 0
-                marston_gorev_sonuc = 0
                 
                 if d == "1":
                     marston_gorev = 1
@@ -875,7 +876,7 @@ def Oyna(_stdscr):
             yazci(.4, "'Requiescat in pace.'")
             yazci(.4, "Bunu dedin ama ne demek olduğunu hatırlamıyorsun.")
 
-            yazci(.4, "Bu tarafa bakan pencere çok yüksek değil, penereden indin.")
+            yazci(.4, "Bu tarafa bakan pencere çok yüksek değil, pencereden indin.")
             
             if marston_gorev and not marston_gorev_sonuc:
                 yazci(.4, "Marston'u gördün.")
